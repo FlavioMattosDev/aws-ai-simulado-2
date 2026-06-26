@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AWS AI Practitioner (AIF-C01) — Quiz Interativo</title>
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap');
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: #f6f8fc;
+        }
+
+        .quiz-card {
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s ease;
+        }
+
+        .option-btn {
+            transition: all 0.15s ease;
+            border: 2px solid #e9edf4;
+            border-radius: 12px;
+            padding: 14px 20px;
+            cursor: pointer;
+            background: #fff;
+            width: 100%;
+            text-align: left;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #1a2332;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .option-btn:hover:not(.disabled) {
+            border-color: #7c8db5;
+            background: #f8faff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 20, 60, 0.06);
+        }
+
+        .option-btn .letter {
+            display: inline-block;
+            font-weight: 700;
+            color: #4a5a7a;
+            width: 28px;
+            flex-shrink: 0;
+        }
+
+        .option-btn.correct {
+            border-color: #0f973d;
+            background: #e6f7ed;
+        }
+        .option-btn.correct .letter {
+            color: #0f973d;
+        }
+
+        .option-btn.wrong {
+            border-color: #d32f2f;
+            background: #fde8e8;
+        }
+        .option-btn.wrong .letter {
+            color: #d32f2f;
+        }
+
+        .option-btn.reveal-correct {
+            border-color: #0f973d;
+            background: #e6f7ed;
+        }
+        .option-btn.reveal-correct .letter {
+            color: #0f973d;
+        }
+
+        .option-btn.disabled {
+            cursor: default;
+            opacity: 0.7;
+        }
+        .option-btn.disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .option-btn.selected-correct {
+            border-color: #0f973d;
+            background: #e6f7ed;
+        }
+        .option-btn.selected-wrong {
+            border-color: #d32f2f;
+            background: #fde8e8;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #e9edf4;
+            border-radius: 99px;
+            overflow: hidden;
+        }
+        .progress-bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb, #4f7df3);
+            border-radius: 99px;
+            transition: width 0.4s ease;
+        }
+
+        .badge-domain {
+            background: #eef2ff;
+            color: #1d4ed8;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 99px;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .explanation-box {
+            background: #f8faff;
+            border-radius: 16px;
+            border: 1px solid #e9edf4;
+            padding: 20px 24px;
+            margin-top: 20px;
+            animation: fadeSlideIn 0.3s ease;
+        }
+        .explanation-box .correct-label {
+            color: #0f973d;
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .explanation-box .wrong-label {
+            color: #d32f2f;
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @keyframes fadeSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #eef2ff, #dbeafe);
+            margin: 0 auto 16px;
+        }
+        .score-circle .number {
+            font-size: 2.6rem;
+            font-weight: 700;
+            color: #1a2332;
+            line-height: 1;
+        }
+        .score-circle .label {
+            font-size: 0.8rem;
+            color: #4a5a7a;
+            font-weight: 500;
+        }
+
+        .review-item {
+            border-left: 4px solid #d32f2f;
+            padding: 16px 20px;
+            background: #fdf8f8;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .review-item .q-head {
+            font-weight: 600;
+            color: #1a2332;
+            font-size: 0.95rem;
+        }
+        .review-item .your-answer {
+            font-size: 0.9rem;
+            color: #d32f2f;
+        }
+        .review-item .correct-answer {
+            font-size: 0.9rem;
+            color: #0f973d;
+        }
+
+        .btn-primary {
+            background: #1a2332;
+            color: #fff;
+            padding: 12px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: #2d3a52;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(26, 35, 50, 0.15);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .btn-secondary {
+            background: #e9edf4;
+            color: #1a2332;
+            padding: 12px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: #d5dce8;
+        }
+        .btn-secondary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .text-muted {
+            color: #6b7b9a;
+        }
+        .container-narrow {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f0f2f6;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c5cedb;
+            border-radius: 99px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8b4c9;
+        }
+
+        .question-number-badge {
+            display: inline-block;
+            background: #eef2ff;
+            color: #1d4ed8;
+            font-weight: 700;
+            font-size: 0.8rem;
+            padding: 4px 14px;
+            border-radius: 99px;
+            letter-spacing: 0.01em;
+        }
+        .pill-tag {
+            background: #eef2ff;
+            color: #1d4ed8;
+            padding: 2px 12px;
+            border-radius: 99px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .setup-option {
+            border: 2px solid #e9edf4;
+            border-radius: 16px;
+            padding: 16px 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            background: #fff;
+        }
+        .setup-option:hover {
+            border-color: #7c8db5;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+        }
+        .setup-option.selected {
+            border-color: #1a2332;
+            background: #f0f4ff;
+            box-shadow: 0 4px 12px rgba(26, 35, 50, 0.08);
+        }
+        .setup-option .number {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1a2332;
+        }
+        .setup-option .label {
+            font-size: 0.75rem;
+            color: #6b7b9a;
+            margin-top: 2px;
+        }
+
+        @media (max-width: 640px) {
+            .option-btn {
+                padding: 12px 16px;
+                font-size: 0.88rem;
+            }
+            .explanation-box {
+                padding: 16px 18px;
+            }
+            .score-circle {
+                width: 100px;
+                height: 100px;
+            }
+            .score-circle .number {
+                font-size: 2rem;
+            }
+            .setup-option .number {
+                font-size: 1.3rem;
+            }
+            .setup-option {
+                padding: 12px 8px;
+            }
+        }
+
+        .fade-enter {
+            animation: fadeIn 0.25s ease;
+        }
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app" class="min-h-screen py-8 md:py-12">
+        <div class="container-narrow">
+
+            <!-- Header -->
+            <header class="mb-6 flex items-center justify-between flex-wrap gap-3">
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold text-[#1a2332] tracking-tight flex items-center gap-2">
+                        <span class="bg-[#1a2332] text-white text-sm px-3 py-1 rounded-lg">AIF-C01</span>
+                        AWS AI Practitioner
+                    </h1>
+                    <p class="text-sm text-muted mt-0.5">Quiz interativo • 65 questões</p>
+                </div>
+                <div id="headerStats" class="text-sm text-muted bg-white/70 px-4 py-2 rounded-xl shadow-sm border border-[#e9edf4]">
+                    <span id="progressText">0 / 0</span>
+                    <span class="mx-2 text-[#d5dce8]">|</span>
+                    <span id="scoreDisplay">0%</span>
+                </div>
+            </header>
+
+            <!-- TELA INICIAL DE CONFIGURAÇÃO -->
+            <div id="setupScreen" class="quiz-card p-6 md:p-10 text-center">
+                <div class="max-w-lg mx-auto">
+                    <div class="mb-2">
+                        <span class="inline-block bg-[#1a2332] text-white text-sm px-4 py-1.5 rounded-full font-semibold">⚙️ Configuração</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-[#1a2332] mt-2">Quantas questões você quer responder?</h2>
+                    <p class="text-muted text-sm mt-1">Selecione o número de perguntas para esta sessão</p>
+
+                    <div class="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-6">
+                        <div class="setup-option" data-count="5">
+                            <div class="number">5</div>
+                            <div class="label">questões</div>
+                        </div>
+                        <div class="setup-option" data-count="10">
+                            <div class="number">10</div>
+                            <div class="label">questões</div>
+                        </div>
+                        <div class="setup-option" data-count="15">
+                            <div class="number">15</div>
+                            <div class="label">questões</div>
+                        </div>
+                        <div class="setup-option" data-count="20">
+                            <div class="number">20</div>
+                            <div class="label">questões</div>
+                        </div>
+                        <div class="setup-option" data-count="25">
+                            <div class="number">25</div>
+                            <div class="label">questões</div>
+                        </div>
+                        <div class="setup-option" data-count="30">
+                            <div class="number">30</div>
+                            <div class="label">questões</div>
+                        </div>
+                        <div class="setup-option" data-count="40">
+                            <div class="number">40</div>
+                            <div class="label">questões</div>
+                        </div>
+                        <div class="setup-option" data-count="50">
+                            <div class="number">50</div>
+                            <div class="label">questões</div>
+                        </div>
+                        <div class="setup-option" data-count="65">
+                            <div class="number">65</div>
+                            <div class="label">questões</div>
+                        </div>
+                    </div>
+
+                    <button id="startQuizBtn" class="btn-primary mt-8 w-full sm:w-auto px-12 py-3 text-base" disabled>
+                        🚀 Iniciar Quiz
+                    </button>
+                    <p id="setupMsg" class="text-xs text-muted mt-3">Selecione uma quantidade para começar</p>
+                </div>
+            </div>
+
+            <!-- ÁREA DO QUIZ (oculta até iniciar) -->
+            <div id="quizArea" class="hidden">
+                <!-- Progress Bar -->
+                <div class="progress-bar mb-6">
+                    <div id="progressFill" class="fill" style="width: 0%;"></div>
+                </div>
+
+                <!-- Main Quiz Card -->
+                <div class="quiz-card p-5 md:p-8">
+                    <div id="questionArea">
+                        <!-- Dynamic -->
+                    </div>
+
+                    <!-- Navigation -->
+                    <div id="navArea" class="flex items-center justify-between gap-3 mt-6 pt-4 border-t border-[#e9edf4] flex-wrap">
+                        <button id="prevBtn" class="btn-secondary text-sm px-5 py-2.5">← Anterior</button>
+                        <span id="navCounter" class="text-sm text-muted font-medium">1 de 0</span>
+                        <button id="nextBtn" class="btn-primary text-sm px-5 py-2.5">Próxima →</button>
+                    </div>
+                </div>
+
+                <!-- Review Section -->
+                <div id="reviewSection" class="mt-6 hidden">
+                    <div class="quiz-card p-5 md:p-8">
+                        <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+                            <h2 class="text-lg font-bold text-[#1a2332]">📋 Revisão — Questões Erradas</h2>
+                            <button id="restartBtn" class="btn-primary text-sm px-5 py-2.5">🔄 Recomeçar Quiz</button>
+                        </div>
+                        <div id="reviewList" class="space-y-3 max-h-[600px] overflow-y-auto pr-1"></div>
+                        <p id="noWrongMsg" class="text-center text-muted py-8 text-lg hidden">🎉 Parabéns! Você acertou todas as questões!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="mt-8 text-center text-xs text-muted/60 border-t border-[#e9edf4] pt-6">
+                AWS AI Practitioner (AIF-C01) — Material de estudo baseado no simulado oficial.
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // DATA — extraído fielmente do simulado (65 questões)
+        // ============================================================
+
+        const rawQuestions = [{
+            id: 1,
+            domain: 'Fundamentos de IA e ML',
+            text: 'Uma empresa de logística quer prever o tempo de entrega de pacotes com base em distância, peso, condições climáticas e histórico de entregas anteriores. O resultado esperado é um número em horas. Qual tipo de problema de ML descreve melhor esse caso de uso?',
+            options: [
+                { id: 'A', text: 'Classificação binária' },
+                { id: 'B', text: 'Agrupamento (clustering)' },
+                { id: 'C', text: 'Regressão' },
+                { id: 'D', text: 'Aprendizado por reforço' }
+            ],
+            correct: 'C',
+            explanation: '✅ Por que C é correta: O objetivo é prever um valor numérico contínuo (tempo em horas). Sempre que a saída esperada é um número contínuo, o problema é de regressão.\n\n❌ Por que as outras estão erradas:\n- A) Classificação binária — prevê uma de duas categorias (sim/não), não um número.\n- B) Clustering — agrupa dados sem rótulos; não há previsão de valor.\n- D) Aprendizado por reforço — um agente aprende por interação com ambiente; não se aplica a previsão com dados históricos.'
+        }, {
+            id: 2,
+            domain: 'Fundamentos de IA e ML',
+            text: 'Um cientista de dados está treinando um modelo de ML para detectar fraudes em transações bancárias. Após o treinamento, o modelo apresenta 99% de acurácia nos dados de treino, mas apenas 61% nos dados de teste. O que esse comportamento indica?',
+            options: [
+                { id: 'A', text: 'O modelo está com underfitting e precisa de mais camadas' },
+                { id: 'B', text: 'O modelo está com overfitting e não generaliza bem para dados novos' },
+                { id: 'C', text: 'O conjunto de dados de teste está corrompido' },
+                { id: 'D', text: 'A acurácia não é uma métrica válida para detecção de fraudes' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Alta performance nos dados de treino e baixa nos dados de teste é o sinal clássico de overfitting — o modelo memorizou os dados de treino em vez de aprender padrões generalizáveis.\n\n❌ Por que as outras estão erradas:\n- A) Underfitting — resultaria em baixa performance tanto no treino quanto no teste.\n- C) Dataset corrompido — possível, mas a explicação mais provável e direta é overfitting.\n- D) Acurácia inválida — embora acurácia seja limitada para dados desbalanceados, isso não explica a discrepância entre treino e teste.'
+        }, {
+            id: 3,
+            domain: 'Fundamentos de IA e ML',
+            text: 'Uma empresa quer segmentar sua base de clientes em grupos com comportamentos de compra similares, sem usar categorias predefinidas. Nenhum dado rotulado está disponível. Qual abordagem de ML é mais adequada?',
+            options: [
+                { id: 'A', text: 'Classificação supervisionada' },
+                { id: 'B', text: 'Regressão linear' },
+                { id: 'C', text: 'Clustering não supervisionado' },
+                { id: 'D', text: 'Aprendizado por reforço' }
+            ],
+            correct: 'C',
+            explanation: '✅ Por que C é correta: Sem rótulos predefinidos e com o objetivo de descobrir agrupamentos naturais, o clustering é a abordagem correta. Algoritmos como K-Means identificam grupos com base em similaridade.\n\n❌ Por que as outras estão erradas:\n- A) Classificação supervisionada — exige dados rotulados, que não existem aqui.\n- B) Regressão linear — prevê valores numéricos contínuos; não agrupa dados.\n- D) Aprendizado por reforço — aprende por interação e recompensa; não se aplica a segmentação de clientes.'
+        }, {
+            id: 4,
+            domain: 'Fundamentos de IA e ML',
+            text: 'Um engenheiro de ML precisa avaliar o desempenho de um modelo de classificação binária que detecta e-mails de phishing. A empresa tolera alguns falsos negativos, mas não pode ter muitos falsos positivos, pois e-mails legítimos não podem ser bloqueados. Qual métrica de avaliação é mais relevante para esse requisito?',
+            options: [
+                { id: 'A', text: 'Recall (sensibilidade)' },
+                { id: 'B', text: 'Precisão (precision)' },
+                { id: 'C', text: 'Acurácia geral' },
+                { id: 'D', text: 'F1-Score' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Precisão mede "dos e-mails classificados como phishing, quantos realmente são phishing". Alta precisão minimiza falsos positivos (e-mails legítimos bloqueados), que é exatamente o requisito da empresa.\n\n❌ Por que as outras estão erradas:\n- A) Recall — mede quantos phishings reais foram detectados; maximizá-lo aumenta os falsos positivos, que é o problema a evitar.\n- C) Acurácia geral — pode ser enganosa com dados desbalanceados e não foca no requisito de negócio.\n- D) F1-Score — equilibra precisão e recall; útil quando ambos importam igualmente, mas aqui a precisão tem prioridade.'
+        }, {
+            id: 5,
+            domain: 'Fundamentos de IA e ML',
+            text: 'Uma equipe de dados está construindo um pipeline de ML. Durante a fase de preparação, eles percebem que 35% dos registros têm valores ausentes em uma coluna importante. Excluir esses registros reduziria significativamente o conjunto de dados. Qual abordagem é mais adequada para lidar com esse problema?',
+            options: [
+                { id: 'A', text: 'Treinar o modelo ignorando a coluna com valores ausentes' },
+                { id: 'B', text: 'Substituir os valores ausentes pela média ou mediana da coluna (imputação)' },
+                { id: 'C', text: 'Duplicar os registros completos para compensar a perda' },
+                { id: 'D', text: 'Converter os valores ausentes para zero em todos os casos' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Imputação é a prática padrão para lidar com valores ausentes sem perder registros. Média é usada para distribuições simétricas; mediana é mais robusta para distribuições assimétricas ou com outliers.\n\n❌ Por que as outras estão erradas:\n- A) Ignorar a coluna — descarta informação potencialmente importante para o modelo.\n- C) Duplicar registros completos — não resolve os valores ausentes e introduz duplicatas que distorcem o treinamento.\n- D) Converter para zero — zero pode ter significado próprio na coluna e introduzir viés nos dados.'
+        }, {
+            id: 6,
+            domain: 'Fundamentos de IA e ML',
+            text: 'Uma empresa quer usar ML para recomendar produtos aos clientes com base no histórico de compras de outros usuários com comportamento similar, sem usar atributos explícitos dos produtos. Qual técnica de ML descreve melhor essa abordagem?',
+            options: [
+                { id: 'A', text: 'Filtragem colaborativa (collaborative filtering)' },
+                { id: 'B', text: 'Regressão logística' },
+                { id: 'C', text: 'Árvore de decisão supervisionada' },
+                { id: 'D', text: 'Análise de componentes principais (PCA)' }
+            ],
+            correct: 'A',
+            explanation: '✅ Por que A é correta: Filtragem colaborativa recomenda itens com base no comportamento de usuários similares, sem usar atributos explícitos dos produtos. É a base de sistemas como Netflix e Spotify.\n\n❌ Por que as outras estão erradas:\n- B) Regressão logística — modelo de classificação binária; não é uma técnica de recomendação.\n- C) Árvore de decisão — modelo supervisionado para classificação/regressão; não recomenda por similaridade de usuários.\n- D) PCA — técnica de redução de dimensionalidade; não gera recomendações diretamente.'
+        }, {
+            id: 7,
+            domain: 'Fundamentos de IA e ML',
+            text: 'Um modelo de ML foi treinado para aprovar ou recusar pedidos de empréstimo. Após o deploy, a equipe percebe que o modelo tem desempenho muito inferior para clientes de uma determinada região geográfica. Qual é a causa mais provável desse problema?',
+            options: [
+                { id: 'A', text: 'O modelo foi treinado com taxa de aprendizado muito alta' },
+                { id: 'B', text: 'Os dados de treinamento não representam adequadamente clientes dessa região (viés de dados)' },
+                { id: 'C', text: 'O modelo tem camadas demais e está com overfitting' },
+                { id: 'D', text: 'A região geográfica não é uma variável relevante para modelos de crédito' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Quando um modelo tem desempenho inferior para um subgrupo específico, a causa mais comum é que esse grupo estava sub-representado ou mal representado nos dados de treinamento. O modelo não aprendeu padrões suficientes para essa população.\n\n❌ Por que as outras estão erradas:\n- A) Taxa de aprendizado alta — causaria instabilidade geral no treinamento, não desempenho inferior em um grupo específico.\n- C) Overfitting por excesso de camadas — causaria degradação geral, não segmentada por região.\n- D) Região geográfica irrelevante — o cenário mostra justamente que ela é relevante, pois o modelo falha para essa região.'
+        }, {
+            id: 8,
+            domain: 'Fundamentos de IA e ML',
+            text: 'Uma empresa de saúde quer usar ML para classificar imagens de raio-X como normais ou com anomalias. O dataset disponível tem 10.000 imagens normais e apenas 200 com anomalias. Qual desafio esse cenário apresenta para o treinamento do modelo?',
+            options: [
+                { id: 'A', text: 'Volume de dados insuficiente para qualquer tipo de modelo' },
+                { id: 'B', text: 'Desbalanceamento de classes, que pode fazer o modelo ignorar as anomalias' },
+                { id: 'C', text: 'As imagens médicas não podem ser processadas por modelos de ML' },
+                { id: 'D', text: 'O problema exige aprendizado não supervisionado' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Com 10.000 exemplos normais e apenas 200 com anomalias, o modelo tende a classificar tudo como "normal" e ainda assim obter alta acurácia. Técnicas como oversampling (SMOTE), undersampling ou ajuste de pesos de classe são necessárias.\n\n❌ Por que as outras estão erradas:\n- A) Volume insuficiente — 10.200 imagens são razoáveis; o problema é a distribuição, não o volume total.\n- C) Imagens médicas incompatíveis com ML — falso; modelos de visão computacional são amplamente usados em diagnóstico médico.\n- D) Exige aprendizado não supervisionado — classificação com rótulos disponíveis é supervisionada; o desafio é o desbalanceamento.'
+        }, {
+            id: 9,
+            domain: 'Fundamentos de IA e ML',
+            text: 'Um varejista quer usar ML para prever quais produtos terão alta demanda nas próximas 4 semanas, com base em dados históricos de vendas, sazonalidade e promoções planejadas. Qual tipo de problema de ML descreve melhor esse caso de uso?',
+            options: [
+                { id: 'A', text: 'Classificação multiclasse' },
+                { id: 'B', text: 'Detecção de anomalias' },
+                { id: 'C', text: 'Previsão de séries temporais' },
+                { id: 'D', text: 'Geração de conteúdo com IA generativa' }
+            ],
+            correct: 'C',
+            explanation: '✅ Por que C é correta: Prever valores futuros com base em dados históricos ordenados no tempo é por definição uma tarefa de séries temporais. Algoritmos como ARIMA, Prophet ou redes neurais recorrentes são usados para isso.\n\n❌ Por que as outras estão erradas:\n- A) Classificação multiclasse — prevê categorias discretas, não valores futuros contínuos.\n- B) Detecção de anomalias — identifica pontos fora do padrão; não projeta demanda futura.\n- D) IA generativa — gera conteúdo novo; não é adequada para previsão de demanda com dados estruturados.'
+        }, {
+            id: 10,
+            domain: 'Fundamentos de IA e ML',
+            text: 'Durante o desenvolvimento de um modelo de ML, a equipe divide os dados em três conjuntos: treinamento, validação e teste. Qual é a função principal do conjunto de validação?',
+            options: [
+                { id: 'A', text: 'Fornecer dados inéditos para a avaliação final do modelo antes do deploy' },
+                { id: 'B', text: 'Ajustar hiperparâmetros e monitorar o desempenho durante o treinamento para evitar overfitting' },
+                { id: 'C', text: 'Aumentar o volume de dados disponíveis para o treinamento' },
+                { id: 'D', text: 'Substituir o conjunto de teste quando os dados são escassos' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: O conjunto de validação é usado durante o treinamento para monitorar o desempenho em dados não vistos, guiar o ajuste de hiperparâmetros e detectar overfitting antes do teste final.\n\n❌ Por que as outras estão erradas:\n- A) Avaliação final antes do deploy — essa é a função do conjunto de teste, não de validação.\n- C) Aumentar volume de dados — o conjunto de validação não é usado para treinar o modelo.\n- D) Substituir o conjunto de teste — os dois têm funções distintas e não devem ser intercambiados.'
+        }, {
+            id: 11,
+            domain: 'Fundamentos de IA e ML',
+            text: 'Uma empresa quer implementar um sistema de recomendação de músicas. O sistema deve aprender continuamente com as reações dos usuários — curtidas, pulos e tempo de escuta — para melhorar as sugestões ao longo do tempo. Qual paradigma de ML é mais adequado para esse caso?',
+            options: [
+                { id: 'A', text: 'Aprendizado supervisionado com rótulos fixos' },
+                { id: 'B', text: 'Clustering não supervisionado' },
+                { id: 'C', text: 'Aprendizado por reforço' },
+                { id: 'D', text: 'Regressão linear múltipla' }
+            ],
+            correct: 'C',
+            explanation: '✅ Por que C é correta: O sistema aprende a partir de sinais de recompensa (curtidas, pulos, tempo de escuta) interagindo continuamente com os usuários. Isso é a definição de aprendizado por reforço — um agente maximiza recompensas ao longo do tempo.\n\n❌ Por que as outras estão erradas:\n- A) Supervisionado com rótulos fixos — não aprende continuamente; requer conjunto de dados rotulado estático.\n- B) Clustering — agrupa dados; não aprende a recomendar com base em feedback contínuo.\n- D) Regressão linear — prevê valores numéricos; não modela aprendizado por interação.'
+        }, {
+            id: 12,
+            domain: 'Fundamentos de IA e ML',
+            text: 'Um engenheiro está avaliando diferentes algoritmos de ML para um problema de classificação. Ele quer escolher o modelo com melhor capacidade de distinguir entre as classes positiva e negativa em diferentes limiares de decisão. Qual métrica é mais adequada para essa avaliação?',
+            options: [
+                { id: 'A', text: 'Acurácia' },
+                { id: 'B', text: 'Área sob a curva ROC (AUC-ROC)' },
+                { id: 'C', text: 'Erro quadrático médio (MSE)' },
+                { id: 'D', text: 'Variância explicada' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: A curva ROC mostra a relação entre taxa de verdadeiros positivos e falsos positivos em todos os limiares de decisão possíveis. A área sob ela (AUC) resume essa performance em um único número — quanto mais próximo de 1, melhor o modelo distingue as classes.\n\n❌ Por que as outras estão erradas:\n- A) Acurácia — avalia apenas um limiar fixo; não mostra o comportamento em diferentes pontos de corte.\n- C) MSE — métrica para regressão (valores contínuos), não para classificação.\n- D) Variância explicada — usada em regressão e PCA; não avalia classificadores binários.'
+        }, {
+            id: 13,
+            domain: 'Fundamentos de IA e ML',
+            text: 'Uma empresa de telecomunicações quer prever quais clientes têm maior probabilidade de cancelar o serviço (churn) no próximo mês. A equipe tem acesso a dados históricos de uso, pagamentos e interações com o suporte. Qual abordagem descreve melhor a solução de ML para esse problema?',
+            options: [
+                { id: 'A', text: 'Modelo de regressão para prever o valor do próximo pagamento' },
+                { id: 'B', text: 'Modelo de classificação supervisionada para prever probabilidade de cancelamento' },
+                { id: 'C', text: 'Modelo de clustering para agrupar clientes por perfil de uso' },
+                { id: 'D', text: 'Modelo generativo para criar perfis sintéticos de clientes' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Prever se um cliente vai ou não cancelar (churn) com base em dados históricos rotulados é classificação supervisionada binária. O modelo aprende padrões de clientes que cancelaram versus os que ficaram.\n\n❌ Por que as outras estão erradas:\n- A) Regressão — prevê um valor numérico contínuo, como o valor do próximo pagamento, não uma categoria.\n- C) Clustering — segmenta sem prever um resultado específico; não identifica quem vai cancelar.\n- D) Modelo generativo — cria dados sintéticos; não prevê comportamento real de clientes.'
+        }, {
+            id: 14,
+            domain: 'Fundamentos de IA Generativa',
+            text: 'Uma empresa quer usar um modelo de linguagem grande (LLM) para responder perguntas dos clientes. Durante os testes, o modelo frequentemente gera respostas convincentes, mas factualmente incorretas sobre produtos da empresa. Como esse fenômeno é chamado?',
+            options: [
+                { id: 'A', text: 'Overfitting' },
+                { id: 'B', text: 'Viés de confirmação' },
+                { id: 'C', text: 'Alucinação' },
+                { id: 'D', text: 'Underfitting' }
+            ],
+            correct: 'C',
+            explanation: '✅ Por que C é correta: Alucinação é o fenômeno em que LLMs geram respostas fluentes e confiantes, mas factualmente incorretas ou inventadas. É um dos principais desafios de confiabilidade de sistemas de IA generativa.\n\n❌ Por que as outras estão erradas:\n- A) Overfitting — o modelo memorizou dados de treino; não descreve geração de informações falsas.\n- B) Viés de confirmação — tendência a confirmar crenças existentes; não descreve geração de fatos incorretos.\n- D) Underfitting — modelo que não aprendeu padrões suficientes; produziria respostas genéricas, não falsidades convincentes.'
+        }, {
+            id: 15,
+            domain: 'Fundamentos de IA Generativa',
+            text: 'Um desenvolvedor está criando um assistente de IA usando um LLM. Ele quer que o modelo siga um conjunto de regras de comportamento, como sempre responder em português e nunca discutir concorrentes, sem modificar o modelo. Qual é a abordagem mais adequada?',
+            options: [
+                { id: 'A', text: 'Fine-tuning do modelo com exemplos de comportamento desejado' },
+                { id: 'B', text: 'Uso de system prompt para definir as regras de comportamento' },
+                { id: 'C', text: 'Retreinamento completo do modelo com dados filtrados' },
+                { id: 'D', text: 'Uso de embeddings para restringir o vocabulário do modelo' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: O system prompt define o comportamento, tom, restrições e regras do modelo antes da conversa começar. É a forma mais direta e eficiente de controlar o comportamento sem modificar o modelo.\n\n❌ Por que as outras estão erradas:\n- A) Fine-tuning — modifica os pesos do modelo; é caro e desnecessário para regras comportamentais simples.\n- C) Retreinamento completo — extremamente custoso e desnecessário para esse caso.\n- D) Embeddings para restringir vocabulário — embeddings representam semântica de texto; não controlam comportamento do modelo diretamente.'
+        }, {
+            id: 16,
+            domain: 'Fundamentos de IA Generativa',
+            text: 'Uma empresa quer escolher entre diferentes modelos de fundação disponíveis no Amazon Bedrock para uma tarefa de sumarização de documentos jurídicos longos. O principal critério é a capacidade do modelo de processar textos muito extensos em uma única chamada. Qual característica do modelo deve ser priorizada na avaliação?',
+            options: [
+                { id: 'A', text: 'Tamanho do vocabulário de treinamento' },
+                { id: 'B', text: 'Tamanho da janela de contexto (context window)' },
+                { id: 'C', text: 'Velocidade de inferência em milissegundos' },
+                { id: 'D', text: 'Número de parâmetros do modelo' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: A janela de contexto define o máximo de tokens que o modelo pode processar em uma única chamada. Para documentos jurídicos longos, é essencial que o modelo consiga processar o documento inteiro sem truncamento.\n\n❌ Por que as outras estão erradas:\n- A) Tamanho do vocabulário — influencia a qualidade linguística geral, mas não a capacidade de processar documentos longos.\n- C) Velocidade de inferência — importante para latência, mas não para a capacidade de processar textos extensos.\n- D) Número de parâmetros — indica capacidade geral do modelo, mas não determina diretamente o tamanho de texto que pode ser processado.'
+        }, {
+            id: 17,
+            domain: 'Fundamentos de IA Generativa',
+            text: 'Uma equipe de marketing quer usar IA generativa para criar variações de textos publicitários. Eles percebem que o modelo sempre gera respostas muito similares, sem criatividade. Eles usam a API do Amazon Bedrock e querem ajustar esse comportamento sem trocar de modelo. Qual parâmetro de inferência deve ser aumentado para gerar respostas mais variadas e criativas?',
+            options: [
+                { id: 'A', text: 'Top-P' },
+                { id: 'B', text: 'Temperatura (temperature)' },
+                { id: 'C', text: 'Max tokens' },
+                { id: 'D', text: 'Stop sequence' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: A temperatura controla a aleatoriedade das respostas. Valores baixos (próximos a 0) tornam as respostas mais determinísticas e repetitivas. Aumentar a temperatura gera respostas mais variadas e criativas.\n\n❌ Por que as outras estão erradas:\n- A) Top-P — também influencia variabilidade, mas temperatura é o parâmetro primário e mais direto para criatividade.\n- C) Max tokens — controla o comprimento máximo da resposta, não sua variedade.\n- D) Stop sequence — define quando o modelo para de gerar; não afeta criatividade.'
+        }, {
+            id: 18,
+            domain: 'Fundamentos de IA Generativa',
+            text: 'Um arquiteto de soluções precisa escolher entre fine-tuning e RAG para adaptar um modelo de fundação ao contexto de uma empresa. A base de conhecimento da empresa é atualizada semanalmente com novos documentos. Qual abordagem é mais adequada considerando esse requisito de atualização frequente?',
+            options: [
+                { id: 'A', text: 'Fine-tuning, pois incorpora o conhecimento diretamente nos pesos do modelo' },
+                { id: 'B', text: 'RAG, pois permite atualizar a base de conhecimento sem retreinar o modelo' },
+                { id: 'C', text: 'Fine-tuning, pois é mais barato que manter uma base vetorial' },
+                { id: 'D', text: 'Nenhuma das duas — o modelo deve ser retreinado do zero a cada semana' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: RAG separa o conhecimento do modelo — ele fica armazenado em uma base vetorial externa que pode ser atualizada a qualquer momento sem retreinar nada. Ideal para bases de conhecimento dinâmicas.\n\n❌ Por que as outras estão erradas:\n- A) Fine-tuning — incorpora conhecimento nos pesos do modelo; para atualizar, é necessário retreinar, o que é caro e lento.\n- C) Fine-tuning mais barato — na prática, manter uma base vetorial com RAG tende a ser mais econômico para atualizações frequentes do que repetir fine-tuning semanalmente.\n- D) Retreinamento do zero — a opção mais cara e demorada; completamente inadequada para atualizações semanais.'
+        }, {
+            id: 19,
+            domain: 'Fundamentos de IA Generativa',
+            text: 'Uma empresa quer usar IA generativa para gerar descrições de produtos para seu catálogo de e-commerce. O time quer que as descrições sigam um formato específico: título, três benefícios e chamada para ação. Qual técnica de engenharia de prompt é mais eficaz para garantir esse formato?',
+            options: [
+                { id: 'A', text: 'Zero-shot prompting com instrução genérica' },
+                { id: 'B', text: 'Few-shot prompting com exemplos do formato desejado' },
+                { id: 'C', text: 'Chain-of-thought prompting para raciocínio passo a passo' },
+                { id: 'D', text: 'Aumentar a temperatura para gerar mais criatividade' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Few-shot prompting fornece exemplos concretos do formato desejado diretamente no prompt. O modelo aprende o padrão pelos exemplos e replica o formato nas novas gerações — é a técnica mais eficaz para controlar estrutura de saída.\n\n❌ Por que as outras estão erradas:\n- A) Zero-shot genérico — sem exemplos, o modelo pode interpretar o formato de maneiras diferentes.\n- C) Chain-of-thought — útil para raciocínio passo a passo; não garante formato de saída específico.\n- D) Aumentar temperatura — gera mais variação, o oposto de controlar um formato fixo.'
+        }, {
+            id: 20,
+            domain: 'Fundamentos de IA Generativa',
+            text: 'Um modelo de linguagem está sendo usado para gerar respostas em um chatbot de atendimento. A equipe percebe que, em conversas longas, o modelo começa a "esquecer" informações mencionadas no início da conversa. Qual é a causa mais provável desse comportamento?',
+            options: [
+                { id: 'A', text: 'O modelo está com overfitting nos dados de treinamento' },
+                { id: 'B', text: 'A conversa ultrapassou o limite da janela de contexto do modelo' },
+                { id: 'C', text: 'O modelo não foi fine-tunado para tarefas de conversação' },
+                { id: 'D', text: 'A temperatura está configurada muito alta' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: LLMs têm um limite de tokens que podem processar de uma vez (janela de contexto). Quando a conversa ultrapassa esse limite, as mensagens mais antigas são descartadas, fazendo o modelo "esquecer" o início da conversa.\n\n❌ Por que as outras estão erradas:\n- A) Overfitting — relacionado ao treinamento, não ao comportamento em produção.\n- C) Falta de fine-tuning — modelos base sem fine-tuning conversacional ainda mantêm o contexto dentro da janela.\n- D) Temperatura alta — afeta criatividade e variabilidade, não memória de contexto.'
+        }, {
+            id: 21,
+            domain: 'Fundamentos de IA Generativa',
+            text: 'Uma startup quer criar um agente de IA que pesquise informações na internet, consulte um banco de dados interno e envie e-mails de forma autônoma para completar tarefas complexas de múltiplos passos. Qual capacidade de IA generativa esse cenário descreve?',
+            options: [
+                { id: 'A', text: 'RAG simples com uma única fonte de dados' },
+                { id: 'B', text: 'Fine-tuning de um modelo para tarefas específicas' },
+                { id: 'C', text: 'Agentes de IA (AI Agents) com uso de ferramentas externas' },
+                { id: 'D', text: 'Prompt engineering com exemplos few-shot' }
+            ],
+            correct: 'C',
+            explanation: '✅ Por que C é correta: Agentes de IA (AI Agents) são sistemas que usam LLMs para planejar e executar tarefas de múltiplos passos, invocando ferramentas externas (APIs, bancos de dados, e-mail) de forma autônoma. O Amazon Bedrock Agents implementa exatamente isso.\n\n❌ Por que as outras estão erradas:\n- A) RAG simples — recupera informações de uma fonte; não executa ações externas autônomas.\n- B) Fine-tuning — adapta o modelo a um domínio; não confere capacidade de agir autonomamente com ferramentas.\n- D) Few-shot prompting — melhora respostas com exemplos; não permite executar ações em sistemas externos.'
+        }, {
+            id: 22,
+            domain: 'Fundamentos de IA Generativa',
+            text: 'Um engenheiro quer avaliar a qualidade das respostas geradas por um LLM em uma tarefa de sumarização. Ele quer uma métrica automatizada que compare os resumos gerados com resumos de referência escritos por humanos. Qual métrica é mais adequada para essa avaliação?',
+            options: [
+                { id: 'A', text: 'AUC-ROC' },
+                { id: 'B', text: 'BLEU score' },
+                { id: 'C', text: 'Erro quadrático médio (MSE)' },
+                { id: 'D', text: 'Precisão e recall binários' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: BLEU (Bilingual Evaluation Understudy) é uma métrica automatizada que compara o texto gerado com textos de referência medindo a sobreposição de n-gramas. É amplamente usada para avaliar sumarização e tradução automática.\n\n❌ Por que as outras estão erradas:\n- A) AUC-ROC — métrica para classificadores binários; não avalia qualidade de texto gerado.\n- C) MSE — erro para regressão de valores numéricos; não se aplica a avaliação de texto.\n- D) Precisão e recall binários — avaliam classificação; não medem similaridade de texto gerado com referência.'
+        }, {
+            id: 23,
+            domain: 'Fundamentos de IA Generativa',
+            text: 'Uma empresa quer usar embeddings de texto para construir um sistema de busca semântica em sua base de documentos internos. Os documentos são armazenados e consultados com base em similaridade de significado, não apenas palavras-chave. Qual serviço AWS é mais adequado para armazenar e consultar esses embeddings de forma eficiente?',
+            options: [
+                { id: 'A', text: 'Amazon RDS com consultas SQL tradicionais' },
+                { id: 'B', text: 'Amazon OpenSearch Service com busca vetorial' },
+                { id: 'C', text: 'Amazon S3 com consultas via Amazon Athena' },
+                { id: 'D', text: 'AWS Glue com catálogo de dados' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: O Amazon OpenSearch Service suporta busca vetorial (k-NN), permitindo armazenar embeddings e recuperar documentos semanticamente similares por proximidade vetorial. É o componente de armazenamento vetorial usado pelo Amazon Bedrock Knowledge Bases.\n\n❌ Por que as outras estão erradas:\n- A) Amazon RDS — banco relacional otimizado para consultas SQL estruturadas; não tem busca vetorial nativa eficiente.\n- C) S3 + Athena — Athena faz consultas SQL em arquivos no S3; não suporta busca por similaridade semântica.\n- D) AWS Glue — ferramenta de ETL para transformação de dados; não armazena nem consulta embeddings.'
+        }, {
+            id: 24,
+            domain: 'Fundamentos de IA Generativa',
+            text: 'Um modelo de IA generativa está sendo usado para gerar relatórios financeiros automatizados. A equipe quer garantir que os números e fatos citados nos relatórios sejam sempre precisos e rastreáveis a fontes confiáveis. Qual abordagem reduz mais efetivamente o risco de alucinações nesse contexto?',
+            options: [
+                { id: 'A', text: 'Aumentar o número de parâmetros do modelo' },
+                { id: 'B', text: 'Usar RAG conectando o modelo a fontes de dados verificadas' },
+                { id: 'C', text: 'Reduzir a temperatura para zero' },
+                { id: 'D', text: 'Usar few-shot prompting com exemplos de relatórios anteriores' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: RAG ancora as respostas do modelo em fontes de dados específicas e verificadas. O modelo cita informações recuperadas de documentos reais, reduzindo drasticamente a probabilidade de inventar dados financeiros.\n\n❌ Por que as outras estão erradas:\n- A) Mais parâmetros — modelos maiores ainda alucinam; tamanho não elimina o problema.\n- C) Temperatura zero — reduz variabilidade mas não elimina alucinações — o modelo ainda pode gerar fatos incorretos de forma determinística.\n- D) Few-shot com relatórios anteriores — melhora o formato mas não garante precisão factual dos números gerados.'
+        }, {
+            id: 25,
+            domain: 'Fundamentos de IA Generativa',
+            text: 'Uma empresa de jogos quer usar IA generativa para criar imagens de personagens com base em descrições textuais fornecidas pelos jogadores. Eles querem usar um serviço gerenciado na AWS sem gerenciar infraestrutura de modelo. Qual serviço AWS atende melhor a esse requisito?',
+            options: [
+                { id: 'A', text: 'Amazon Rekognition' },
+                { id: 'B', text: 'Amazon Bedrock com modelos de geração de imagens (ex: Stability AI)' },
+                { id: 'C', text: 'Amazon SageMaker com modelo de visão computacional personalizado' },
+                { id: 'D', text: 'AWS DeepLens' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: O Amazon Bedrock oferece acesso a modelos de geração de imagens como Stability AI (Stable Diffusion) e Amazon Titan Image Generator via API gerenciada, sem necessidade de gerenciar infraestrutura.\n\n❌ Por que as outras estão erradas:\n- A) Amazon Rekognition — analisa imagens existentes (detecção de objetos, faces, textos); não gera imagens.\n- C) SageMaker com modelo personalizado — exige gerenciamento de infraestrutura e expertise em ML; contradiz o requisito de serviço gerenciado.\n- D) AWS DeepLens — câmera de vídeo com ML para visão computacional; não gera imagens a partir de texto.'
+        }, {
+            id: 26,
+            domain: 'Fundamentos de IA Generativa',
+            text: 'Um desenvolvedor está usando a API do Amazon Bedrock e percebe que as respostas do modelo às vezes são cortadas antes de completar o raciocínio. O modelo parece parar no meio de uma frase. Qual parâmetro de inferência deve ser ajustado para resolver esse problema?',
+            options: [
+                { id: 'A', text: 'Temperatura' },
+                { id: 'B', text: 'Top-P' },
+                { id: 'C', text: 'Max tokens' },
+                { id: 'D', text: 'Stop sequence' }
+            ],
+            correct: 'C',
+            explanation: '✅ Por que C é correta: O parâmetro max tokens define o número máximo de tokens que o modelo pode gerar na resposta. Se o valor estiver muito baixo, a resposta é cortada antes de ser concluída. Aumentá-lo resolve o problema.\n\n❌ Por que as outras estão erradas:\n- A) Temperatura — controla aleatoriedade; não afeta o comprimento máximo da resposta.\n- B) Top-P — controla diversidade de tokens selecionados; não define onde a resposta é cortada.\n- D) Stop sequence — define sequências que encerram a geração propositalmente; poderia causar corte se mal configurado, mas max tokens é a causa mais direta descrita no cenário.'
+        }, {
+            id: 27,
+            domain: 'Fundamentos de IA Generativa',
+            text: 'Uma empresa quer comparar o custo-benefício de dois modelos de fundação disponíveis no Amazon Bedrock para uma tarefa de classificação de textos curtos. O volume esperado é de 10 milhões de requisições por mês. Qual fator é mais relevante para essa análise de custo?',
+            options: [
+                { id: 'A', text: 'O número de parâmetros de cada modelo' },
+                { id: 'B', text: 'O preço por token de entrada e saída de cada modelo' },
+                { id: 'C', text: 'A latência média de resposta de cada modelo' },
+                { id: 'D', text: 'O tamanho da janela de contexto de cada modelo' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: O Amazon Bedrock cobra por token processado (entrada + saída). Para 10 milhões de requisições mensais, a diferença de preço por token entre modelos pode representar uma variação enorme no custo total, sendo o fator mais direto para análise de custo-benefício.\n\n❌ Por que as outras estão erradas:\n- A) Número de parâmetros — indica capacidade, mas não determina o custo diretamente na precificação do Bedrock.\n- C) Latência — importante para experiência do usuário, mas não é o principal fator de custo.\n- D) Janela de contexto — relevante para tarefas com textos longos; para classificação de textos curtos, não é o fator determinante de custo.'
+        }, {
+            id: 28,
+            domain: 'Fundamentos de IA Generativa',
+            text: 'Um cientista de dados quer usar o Amazon Bedrock para fazer fine-tuning de um modelo de fundação com dados proprietários da empresa. Ele precisa garantir que os dados de treinamento não sejam usados pela AWS para melhorar os modelos base. O que ele deve verificar antes de iniciar o processo?',
+            options: [
+                { id: 'A', text: 'Se o modelo suporta quantização de 4 bits' },
+                { id: 'B', text: 'Os termos de uso do modelo e a política de dados do Amazon Bedrock para fine-tuning' },
+                { id: 'C', text: 'Se o modelo tem mais de 70 bilhões de parâmetros' },
+                { id: 'D', text: 'Se o Amazon S3 está na mesma região que o SageMaker' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: O Amazon Bedrock tem uma política clara: dados de clientes não são usados para treinar modelos base por padrão. Para fine-tuning, os dados ficam isolados na conta do cliente. Verificar os termos e a política de dados é a due diligence correta antes de processar dados proprietários.\n\n❌ Por que as outras estão erradas:\n- A) Quantização de 4 bits — técnica de compressão de modelo; não relacionada a privacidade de dados.\n- C) Número de parâmetros — tamanho do modelo não afeta como os dados do cliente são tratados.\n- D) S3 e SageMaker na mesma região — boa prática para latência, mas não é o ponto crítico de privacidade aqui.'
+        }, {
+            id: 29,
+            domain: 'Fundamentos de IA Generativa',
+            text: 'Uma equipe quer implementar uma solução de IA generativa que responda perguntas sobre políticas internas da empresa. Eles têm 500 documentos PDF armazenados no Amazon S3. A solução deve ser implementada com o menor esforço de desenvolvimento possível. Qual combinação de serviços AWS atende melhor a esse requisito?',
+            options: [
+                { id: 'A', text: 'Amazon Textract + Amazon Comprehend + Amazon Lex' },
+                { id: 'B', text: 'Amazon Bedrock Knowledge Bases + Amazon S3' },
+                { id: 'C', text: 'Amazon SageMaker + Amazon Kendra + AWS Lambda' },
+                { id: 'D', text: 'Amazon Rekognition + Amazon Translate + Amazon Polly' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: O Amazon Bedrock Knowledge Bases é exatamente o serviço projetado para esse caso: conecta documentos armazenados no S3 a um modelo de fundação via RAG, com o mínimo de desenvolvimento. É totalmente gerenciado e não exige código para o pipeline de indexação.\n\n❌ Por que as outras estão erradas:\n- A) Textract + Comprehend + Lex — exige integração manual de múltiplos serviços e desenvolvimento significativo.\n- C) SageMaker + Kendra + Lambda — arquitetura válida mas muito mais complexa; contradiz o requisito de menor esforço.\n- D) Rekognition + Translate + Polly — conjunto de serviços para visão, tradução e síntese de voz; não implementa Q&A sobre documentos.'
+        }, {
+            id: 30,
+            domain: 'Aplicações de Modelos de Fundação',
+            text: 'Uma empresa de saúde quer usar um modelo de fundação para extrair informações clínicas de prontuários médicos em texto livre, como diagnósticos, medicamentos e datas de procedimentos. Qual tarefa de processamento de linguagem natural (NLP) descreve melhor esse caso de uso?',
+            options: [
+                { id: 'A', text: 'Sumarização de texto' },
+                { id: 'B', text: 'Extração de entidades nomeadas (NER)' },
+                { id: 'C', text: 'Classificação de sentimentos' },
+                { id: 'D', text: 'Tradução automática' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: NER (Named Entity Recognition) é a tarefa de identificar e classificar entidades específicas em texto — como nomes de doenças, medicamentos, datas e procedimentos. É exatamente o que é descrito no cenário.\n\n❌ Por que as outras estão erradas:\n- A) Sumarização — condensa o texto em versão mais curta; não extrai entidades estruturadas específicas.\n- C) Classificação de sentimentos — determina tom (positivo/negativo); não extrai dados clínicos.\n- D) Tradução — converte texto entre idiomas; não extrai informações estruturadas.'
+        }, {
+            id: 31,
+            domain: 'Aplicações de Modelos de Fundação',
+            text: 'Um arquiteto de soluções está projetando um chatbot de atendimento ao cliente usando Amazon Bedrock. O chatbot deve manter o histórico da conversa para dar respostas contextualizadas ao longo de toda a interação. Qual é a abordagem correta para implementar memória de conversação nesse cenário?',
+            options: [
+                { id: 'A', text: 'Aumentar o número de parâmetros do modelo para que ele memorize conversas' },
+                { id: 'B', text: 'Incluir o histórico de mensagens anteriores no contexto de cada nova chamada à API' },
+                { id: 'C', text: 'Usar fine-tuning para treinar o modelo com conversas anteriores dos clientes' },
+                { id: 'D', text: 'Configurar o parâmetro "memory" na API do Amazon Bedrock' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: LLMs são stateless por natureza — não têm memória entre chamadas. A forma correta de implementar memória conversacional é incluir o histórico de mensagens anteriores no contexto de cada nova requisição à API.\n\n❌ Por que as outras estão erradas:\n- A) Mais parâmetros — o tamanho do modelo não confere memória persistente entre chamadas de API.\n- C) Fine-tuning com conversas anteriores — adapta o estilo do modelo, mas não cria memória de sessão em tempo real.\n- D) Parâmetro "memory" na API — não existe esse parâmetro nativo no Amazon Bedrock; a memória deve ser gerenciada pela aplicação.'
+        }, {
+            id: 32,
+            domain: 'Aplicações de Modelos de Fundação',
+            text: 'Uma empresa quer usar IA generativa para automatizar a geração de código SQL a partir de perguntas em linguagem natural feitas por analistas de negócio. O sistema deve usar o esquema do banco de dados da empresa para gerar consultas precisas. Qual técnica melhora mais a precisão das consultas SQL geradas?',
+            options: [
+                { id: 'A', text: 'Aumentar a temperatura do modelo para gerar mais variações' },
+                { id: 'B', text: 'Incluir o esquema do banco de dados e exemplos de consultas no prompt (few-shot + contexto)' },
+                { id: 'C', text: 'Usar um modelo com mais parâmetros sem ajustar o prompt' },
+                { id: 'D', text: 'Fazer fine-tuning do modelo com consultas SQL genéricas da internet' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Fornecer o esquema do banco de dados (tabelas, colunas, tipos) e exemplos de consultas SQL no prompt (few-shot) permite ao modelo gerar consultas precisas e contextualizadas. É a técnica mais eficaz e econômica para text-to-SQL.\n\n❌ Por que as outras estão erradas:\n- A) Temperatura alta — gera mais variação e criatividade, o oposto do que se quer em SQL, onde precisão é crítica.\n- C) Modelo maior sem ajustar prompt — modelos maiores ajudam, mas sem o esquema no contexto, as consultas ainda serão imprecisas.\n- D) Fine-tuning com SQL genérico — SQL genérico não inclui o esquema específico da empresa; não resolve o problema de precisão.'
+        }, {
+            id: 33,
+            domain: 'Aplicações de Modelos de Fundação',
+            text: 'Uma plataforma de e-learning quer usar IA generativa para criar questões de múltipla escolha automaticamente a partir de textos de aulas. A equipe quer garantir que as questões geradas sejam pedagogicamente corretas e não contenham erros factuais. Qual prática é mais importante para garantir a qualidade do conteúdo gerado?',
+            options: [
+                { id: 'A', text: 'Usar o modelo com maior número de parâmetros disponível' },
+                { id: 'B', text: 'Implementar revisão humana das questões geradas antes de publicá-las' },
+                { id: 'C', text: 'Configurar a temperatura para o valor máximo para gerar mais diversidade' },
+                { id: 'D', text: 'Usar apenas modelos treinados especificamente em conteúdo educacional' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: IA generativa pode gerar questões com erros factuais, ambiguidades ou problemas pedagógicos. Para conteúdo educacional, a revisão humana por especialistas é a salvaguarda essencial antes da publicação — independentemente da qualidade do modelo.\n\n❌ Por que as outras estão erradas:\n- A) Modelo com mais parâmetros — melhora a qualidade média, mas não elimina erros; ainda requer revisão.\n- C) Temperatura máxima — gera mais variação e criatividade, mas aumenta o risco de erros e inconsistências.\n- D) Modelos especializados em educação — podem ajudar, mas sem revisão humana, erros ainda chegam aos alunos.'
+        }, {
+            id: 34,
+            domain: 'Aplicações de Modelos de Fundação',
+            text: 'Uma empresa de seguros quer usar um modelo de fundação para analisar fotos de danos em veículos enviadas pelos clientes e gerar automaticamente um relatório descritivo do dano para os peritos. Qual capacidade de modelo de fundação é necessária para esse caso de uso?',
+            options: [
+                { id: 'A', text: 'Modelo de linguagem puro (text-only)' },
+                { id: 'B', text: 'Modelo multimodal que processa imagens e gera texto' },
+                { id: 'C', text: 'Modelo de geração de imagens (text-to-image)' },
+                { id: 'D', text: 'Modelo de classificação de imagens com rótulos fixos' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: O caso exige que o modelo processe uma imagem (foto do dano) e gere texto (relatório descritivo). Isso requer um modelo multimodal — capaz de entender múltiplos tipos de entrada. Exemplos: Claude 3, GPT-4V, Amazon Titan Multimodal.\n\n❌ Por que as outras estão erradas:\n- A) Modelo text-only — não consegue processar imagens como entrada.\n- C) Text-to-image — gera imagens a partir de texto; o caso de uso é o inverso (imagem → texto).\n- D) Classificação com rótulos fixos — identifica categorias predefinidas (ex: "arranhão", "amassado"); não gera um relatório descritivo em linguagem natural.'
+        }, {
+            id: 35,
+            domain: 'Aplicações de Modelos de Fundação',
+            text: 'Um desenvolvedor está construindo um agente de IA usando Amazon Bedrock Agents. O agente precisa consultar um sistema de CRM externo para buscar dados de clientes antes de responder às perguntas dos usuários. Como o agente acessa esse sistema externo de forma estruturada?',
+            options: [
+                { id: 'A', text: 'O agente faz web scraping do sistema de CRM automaticamente' },
+                { id: 'B', text: 'O desenvolvedor define Action Groups com funções Lambda que o agente pode invocar' },
+                { id: 'C', text: 'O agente usa RAG para indexar o CRM no Amazon S3' },
+                { id: 'D', text: 'O desenvolvedor faz fine-tuning do modelo com dados exportados do CRM' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: No Amazon Bedrock Agents, os Action Groups definem as ações que o agente pode executar. Cada action group é vinculado a uma função AWS Lambda que implementa a lógica de integração com sistemas externos, como APIs de CRM. É o mecanismo nativo e correto para isso.\n\n❌ Por que as outras estão erradas:\n- A) Web scraping automático — não é uma capacidade do Bedrock Agents; seria uma solução frágil e não estruturada.\n- C) RAG indexando o CRM no S3 — RAG serve para recuperar informações estáticas; não executa ações em tempo real em sistemas externos.\n- D) Fine-tuning com dados exportados — incorpora conhecimento histórico no modelo; não permite consultas em tempo real ao CRM.'
+        }, {
+            id: 36,
+            domain: 'Aplicações de Modelos de Fundação',
+            text: 'Uma empresa quer avaliar se um modelo de fundação está adequado para uma tarefa de classificação de sentimentos em avaliações de produtos. Eles têm um conjunto de 1.000 avaliações rotuladas manualmente. Qual é a abordagem mais eficiente para essa avaliação antes de um investimento maior?',
+            options: [
+                { id: 'A', text: 'Fazer fine-tuning completo do modelo e medir a acurácia no conjunto de teste' },
+                { id: 'B', text: 'Usar o modelo com zero-shot ou few-shot prompting e medir o desempenho no conjunto rotulado' },
+                { id: 'C', text: 'Treinar um modelo de ML tradicional do zero e comparar com o modelo de fundação' },
+                { id: 'D', text: 'Contratar especialistas humanos para avaliar cada resposta do modelo manualmente' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Antes de qualquer investimento em fine-tuning, o correto é testar o modelo com prompting simples no conjunto rotulado disponível. Se o desempenho já for adequado, o fine-tuning é desnecessário. É a abordagem mais eficiente e econômica de avaliação inicial.\n\n❌ Por que as outras estão erradas:\n- A) Fine-tuning completo — caro e demorado; não faz sentido como primeiro passo de avaliação.\n- C) Treinar modelo tradicional do zero — contraditório com o objetivo de avaliar o modelo de fundação.\n- D) Avaliação manual por especialistas — válida para validação final, mas ineficiente como avaliação inicial de 1.000 amostras.'
+        }, {
+            id: 37,
+            domain: 'Aplicações de Modelos de Fundação',
+            text: 'Uma empresa financeira quer usar Amazon Bedrock para processar contratos em PDF e responder perguntas sobre cláusulas específicas. Os contratos têm em média 80 páginas. Qual é o principal desafio técnico desse caso de uso?',
+            options: [
+                { id: 'A', text: 'O Amazon Bedrock não suporta entrada de documentos PDF' },
+                { id: 'B', text: 'O tamanho dos contratos pode exceder a janela de contexto do modelo' },
+                { id: 'C', text: 'Modelos de fundação não conseguem interpretar linguagem jurídica' },
+                { id: 'D', text: 'O custo por token torna a solução inviável para documentos longos' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Contratos de 80 páginas podem ter dezenas de milhares de tokens. Se o documento exceder a janela de contexto do modelo escolhido, ele não conseguirá processar o contrato inteiro de uma vez. A solução envolve chunking + RAG ou escolha de modelos com janelas de contexto maiores.\n\n❌ Por que as outras estão erradas:\n- A) Bedrock não suporta PDF — o Amazon Bedrock Knowledge Bases suporta ingestão de PDFs nativamente.\n- C) Modelos não entendem linguagem jurídica — LLMs modernos lidam bem com textos jurídicos; não é o desafio principal.\n- D) Custo inviável — embora contratos longos gerem custos, a questão do contexto é o desafio técnico primário.'
+        }, {
+            id: 38,
+            domain: 'Aplicações de Modelos de Fundação',
+            text: 'Uma startup de RH quer usar IA generativa para triagem inicial de currículos. O sistema deve comparar currículos com descrições de vagas e pontuar a aderência de cada candidato. Qual abordagem técnica é mais adequada para comparar semanticamente currículos e vagas?',
+            options: [
+                { id: 'A', text: 'Comparação de palavras-chave com expressões regulares' },
+                { id: 'B', text: 'Geração de embeddings para currículos e vagas e cálculo de similaridade de cosseno' },
+                { id: 'C', text: 'Classificação binária supervisionada com rótulos manuais' },
+                { id: 'D', text: 'Sumarização dos currículos seguida de comparação de texto literal' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Gerar embeddings para currículos e vagas transforma os textos em vetores numéricos que capturam o significado semântico. A similaridade de cosseno mede o ângulo entre esses vetores — quanto mais próximo de 1, mais semanticamente similares são os documentos. É a abordagem padrão para matching semântico.\n\n❌ Por que as outras estão erradas:\n- A) Expressões regulares — comparam padrões de texto literal; não capturam sinônimos ou conceitos relacionados (ex: "gestão de projetos" vs "gerenciamento de iniciativas").\n- C) Classificação supervisionada — requer muitos pares rotulados manualmente (currículo + vaga = adequado/inadequado); caro e demorado de criar.\n- D) Sumarização + comparação literal — perde nuances semânticas e é suscetível a diferenças de vocabulário.'
+        }, {
+            id: 39,
+            domain: 'Aplicações de Modelos de Fundação',
+            text: 'Um time de engenharia quer usar um modelo de fundação para revisar código-fonte e identificar potenciais bugs e vulnerabilidades de segurança. Eles querem integrar essa capacidade diretamente no pipeline de CI/CD. Qual serviço AWS oferece capacidades de revisão e geração de código baseadas em IA de forma nativa?',
+            options: [
+                { id: 'A', text: 'AWS CodePipeline com scripts de análise estática' },
+                { id: 'B', text: 'Amazon CodeWhisperer (Amazon Q Developer)' },
+                { id: 'C', text: 'AWS CloudFormation com validação de templates' },
+                { id: 'D', text: 'Amazon DevOps Guru para análise de logs' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: O Amazon CodeWhisperer, atualmente integrado ao Amazon Q Developer, oferece sugestões de código em tempo real, detecção de vulnerabilidades de segurança e revisão de código baseada em IA. É o serviço AWS nativo projetado especificamente para assistência de desenvolvimento e integração em pipelines CI/CD.\n\n❌ Por que as outras estão erradas:\n- A) CodePipeline com análise estática — orquestra pipelines de CI/CD; a análise estática requer ferramentas adicionais e não tem capacidade de IA generativa nativa.\n- C) CloudFormation com validação — valida templates de infraestrutura como código; não revisa código de aplicação.\n- D) DevOps Guru — usa ML para detectar anomalias operacionais em aplicações em produção; não revisa código-fonte.'
+        }, {
+            id: 40,
+            domain: 'Aplicações de Modelos de Fundação',
+            text: 'Uma empresa quer usar IA generativa para personalizar e-mails de marketing para milhares de clientes, adaptando o tom e o conteúdo com base no perfil de cada um. O sistema precisa processar 50.000 e-mails por hora. Qual característica da infraestrutura é mais crítica para esse caso de uso em produção?',
+            options: [
+                { id: 'A', text: 'Tamanho da janela de contexto do modelo' },
+                { id: 'B', text: 'Capacidade de processamento em lote (batch inference) e escalabilidade' },
+                { id: 'C', text: 'Número de parâmetros do modelo de linguagem' },
+                { id: 'D', text: 'Suporte a múltiplos idiomas pelo modelo' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Processar 50.000 e-mails por hora requer capacidade de inferência em lote com alta escalabilidade. O Amazon Bedrock oferece batch inference para processar grandes volumes de forma eficiente e econômica, distribuindo as requisições sem sobrecarregar a API.\n\n❌ Por que as outras estão erradas:\n- A) Janela de contexto — e-mails de marketing são curtos; janela de contexto não é o gargalo aqui.\n- C) Número de parâmetros — relevante para qualidade das respostas, mas não é o fator crítico para processamento em alto volume.\n- D) Suporte a múltiplos idiomas — relevante se os e-mails forem multilíngues, mas não é o fator mais crítico para o volume descrito.'
+        }, {
+            id: 41,
+            domain: 'Aplicações de Modelos de Fundação',
+            text: 'Um arquiteto está projetando uma solução com Amazon Bedrock Agents para automatizar o processo de reembolso de despesas corporativas. O agente deve verificar políticas, calcular valores e registrar o reembolso no sistema financeiro. Qual componente é essencial para que o agente execute ações no sistema financeiro externo?',
+            options: [
+                { id: 'A', text: 'Uma Knowledge Base com as políticas de reembolso em formato vetorial' },
+                { id: 'B', text: 'Um Action Group com uma função Lambda que se comunica com a API do sistema financeiro' },
+                { id: 'C', text: 'Fine-tuning do modelo com histórico de reembolsos anteriores' },
+                { id: 'D', text: 'Um prompt de sistema com todas as regras financeiras codificadas manualmente' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Para que um Bedrock Agent execute ações em sistemas externos (como registrar um reembolso via API), é necessário um Action Group vinculado a uma função Lambda. A Lambda implementa a lógica de comunicação com a API do sistema financeiro, e o agente a invoca quando necessário.\n\n❌ Por que as outras estão erradas:\n- A) Knowledge Base com políticas — serve para consultar informações; não executa ações em sistemas externos.\n- C) Fine-tuning com histórico — adapta o comportamento do modelo; não confere capacidade de executar transações externas.\n- D) Prompt de sistema com regras — instrui o comportamento do agente; não conecta o agente a sistemas externos.'
+        }, {
+            id: 42,
+            domain: 'Aplicações de Modelos de Fundação',
+            text: 'Uma empresa de mídia quer usar IA generativa para transcrever podcasts e gerar automaticamente artigos de blog baseados no conteúdo falado. O processo envolve primeiro converter áudio em texto e depois usar um LLM para redigir o artigo. Qual combinação de serviços AWS implementa esse pipeline de forma mais eficiente?',
+            options: [
+                { id: 'A', text: 'Amazon Polly + Amazon Bedrock' },
+                { id: 'B', text: 'Amazon Transcribe + Amazon Bedrock' },
+                { id: 'C', text: 'Amazon Rekognition + Amazon Comprehend' },
+                { id: 'D', text: 'AWS Elemental MediaConvert + Amazon Lex' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: O Amazon Transcribe converte áudio em texto com alta precisão. O texto transcrito é então enviado ao Amazon Bedrock, onde um LLM o transforma em um artigo de blog bem estruturado. É o pipeline mais direto e eficiente para esse caso.\n\n❌ Por que as outras estão erradas:\n- A) Amazon Polly + Bedrock — Polly faz o inverso: converte texto em áudio (text-to-speech); não transcreve.\n- C) Rekognition + Comprehend — Rekognition analisa imagens e vídeos; Comprehend faz NLP em texto; nenhum converte áudio em texto.\n- D) MediaConvert + Lex — MediaConvert processa formatos de vídeo; Lex constrói chatbots; nenhum implementa o pipeline descrito.'
+        }, {
+            id: 43,
+            domain: 'Aplicações de Modelos de Fundação',
+            text: 'Um desenvolvedor está usando Amazon Bedrock e percebe que, para uma tarefa de análise de sentimentos, um modelo menor e mais barato tem desempenho equivalente ao modelo maior e mais caro. Qual princípio de boas práticas esse cenário ilustra?',
+            options: [
+                { id: 'A', text: 'Sempre usar o modelo com maior número de parâmetros para garantir qualidade' },
+                { id: 'B', text: 'Selecionar o modelo mais adequado à tarefa considerando custo-benefício, não apenas capacidade máxima' },
+                { id: 'C', text: 'Fazer fine-tuning do modelo menor para que supere o modelo maior' },
+                { id: 'D', text: 'Usar múltiplos modelos em paralelo e combinar as respostas' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Usar o modelo mais barato que atende aos requisitos de qualidade é uma boa prática fundamental. Modelos maiores consomem mais tokens, têm maior latência e custam mais. Para tarefas simples como análise de sentimentos, modelos menores frequentemente são suficientes.\n\n❌ Por que as outras estão erradas:\n- A) Sempre usar o maior modelo — desperdício de recursos e custo desnecessário quando um modelo menor performa igualmente.\n- C) Fine-tuning do menor — adiciona custo e complexidade desnecessários se o modelo já tem desempenho equivalente sem fine-tuning.\n- D) Múltiplos modelos em paralelo — aumenta custo e complexidade operacional; não é justificado quando um único modelo já é suficiente.'
+        }, {
+            id: 44,
+            domain: 'Aplicações de Modelos de Fundação',
+            text: 'Uma empresa quer construir um sistema de perguntas e respostas sobre seus produtos usando RAG. Eles têm 10.000 páginas de documentação técnica. Para que o RAG funcione corretamente, os documentos precisam ser divididos em partes menores antes de serem indexados. Como essa divisão é chamada tecnicamente?',
+            options: [
+                { id: 'A', text: 'Tokenização' },
+                { id: 'B', text: 'Chunking' },
+                { id: 'C', text: 'Embedding' },
+                { id: 'D', text: 'Quantização' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Chunking é o processo de dividir documentos longos em pedaços menores (chunks) antes de gerar embeddings e indexá-los. Cada chunk representa uma unidade semântica que pode ser recuperada individualmente pelo RAG.\n\n❌ Por que as outras estão erradas:\n- A) Tokenização — divide texto em tokens (palavras ou subpalavras) para processamento pelo modelo; é uma etapa interna do modelo, não a divisão de documentos para RAG.\n- C) Embedding — transforma texto em vetores numéricos; é a etapa posterior ao chunking.\n- D) Quantização — reduz a precisão numérica dos pesos do modelo para compressão; não tem relação com divisão de documentos.'
+        }, {
+            id: 45,
+            domain: 'Aplicações de Modelos de Fundação',
+            text: 'Uma empresa global quer usar IA generativa para traduzir e adaptar culturalmente materiais de treinamento para 12 idiomas diferentes. Além da tradução, o sistema deve adaptar exemplos e referências culturais para cada região. Qual abordagem maximiza a qualidade das adaptações culturais?',
+            options: [
+                { id: 'A', text: 'Usar apenas Amazon Translate para todas as traduções automaticamente' },
+                { id: 'B', text: 'Usar um LLM com instruções específicas de adaptação cultural por região, com revisão humana para validação' },
+                { id: 'C', text: 'Fazer fine-tuning de um modelo separado para cada idioma' },
+                { id: 'D', text: 'Usar modelos de tradução especializada sem LLMs generativos' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: LLMs com instruções específicas por região conseguem adaptar exemplos, expressões idiomáticas e referências culturais de forma muito mais natural do que tradução automática pura. A revisão humana por falantes nativos garante qualidade e adequação cultural — especialmente importante em materiais de treinamento corporativo.\n\n❌ Por que as outras estão erradas:\n- A) Apenas Amazon Translate — faz tradução literal sem adaptação cultural; exemplos e referências culturais podem ser inadequados para cada região.\n- C) Fine-tuning por idioma — exige dados de treinamento por idioma e muito esforço; desnecessário quando LLMs já dominam múltiplos idiomas.\n- D) Modelos de tradução sem LLMs — como a opção A, não fazem adaptação cultural; apenas traduzem texto.'
+        }, {
+            id: 46,
+            domain: 'Aplicações de Modelos de Fundação',
+            text: 'Um time de dados quer usar Amazon Bedrock para analisar feedback de clientes em texto livre e categorizar automaticamente os comentários em temas como "qualidade do produto", "atendimento" e "entrega". Qual técnica de prompting é mais eficaz para garantir que o modelo sempre retorne uma das categorias predefinidas?',
+            options: [
+                { id: 'A', text: 'Zero-shot prompting com instrução genérica de classificação' },
+                { id: 'B', text: 'Few-shot prompting com exemplos de cada categoria e instrução para retornar apenas as categorias listadas' },
+                { id: 'C', text: 'Chain-of-thought prompting para que o modelo justifique sua classificação' },
+                { id: 'D', text: 'Aumentar a temperatura para que o modelo explore mais categorias possíveis' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Few-shot prompting com exemplos de cada categoria e instrução explícita para retornar apenas as categorias listadas é a técnica mais eficaz para garantir saídas estruturadas e previsíveis em tarefas de classificação com categorias fixas.\n\n❌ Por que as outras estão erradas:\n- A) Zero-shot genérico — sem exemplos e sem restrição explícita, o modelo pode criar categorias próprias ou retornar texto livre.\n- C) Chain-of-thought — útil para raciocínio complexo; para classificação em categorias fixas, adiciona verbosidade desnecessária sem garantir o formato correto.\n- D) Temperatura alta — gera mais variação, aumentando o risco de o modelo criar categorias não listadas.'
+        }, {
+            id: 47,
+            domain: 'Aplicações de Modelos de Fundação',
+            text: 'Uma empresa quer implementar guardrails em sua aplicação de IA generativa para evitar que o modelo gere conteúdo inapropriado ou revele informações confidenciais da empresa. Qual serviço AWS oferece essa funcionalidade de forma nativa para aplicações baseadas no Amazon Bedrock?',
+            options: [
+                { id: 'A', text: 'AWS WAF com regras personalizadas de filtragem de texto' },
+                { id: 'B', text: 'Amazon Bedrock Guardrails' },
+                { id: 'C', text: 'AWS Shield com proteção de conteúdo' },
+                { id: 'D', text: 'Amazon Macie para detecção de dados sensíveis' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: O Amazon Bedrock Guardrails é o serviço nativo para implementar filtros de conteúdo em aplicações de IA generativa. Permite configurar filtros para conteúdo prejudicial, tópicos negados, informações sensíveis e alucinações — diretamente na camada do Amazon Bedrock, sem código adicional.\n\n❌ Por que as outras estão erradas:\n- A) AWS WAF — protege aplicações web contra ataques HTTP; não foi projetado para filtragem de conteúdo de LLMs.\n- C) AWS Shield — protege contra ataques DDoS; não filtra conteúdo gerado por IA.\n- D) Amazon Macie — detecta dados sensíveis em buckets S3; não filtra respostas de modelos de linguagem em tempo real.'
+        }, {
+            id: 48,
+            domain: 'Diretrizes para IA Responsável',
+            text: 'Uma empresa está desenvolvendo um modelo de ML para selecionar candidatos a emprego. Após a auditoria, descobre-se que o modelo rejeita candidatos de um determinado grupo demográfico em taxa desproporcional, mesmo quando as qualificações são equivalentes. Como esse problema é classificado em IA responsável?',
+            options: [
+                { id: 'A', text: 'Overfitting do modelo de seleção' },
+                { id: 'B', text: 'Viés algorítmico (algorithmic bias)' },
+                { id: 'C', text: 'Problema de privacidade de dados' },
+                { id: 'D', text: 'Falta de explicabilidade do modelo' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Quando um modelo sistematicamente toma decisões desfavoráveis para um grupo demográfico específico sem justificativa baseada em qualificações, isso é viés algorítmico. Geralmente origina-se de dados de treinamento históricos que refletem preconceitos humanos.\n\n❌ Por que as outras estão erradas:\n- A) Overfitting — modelo que memoriza dados de treino; não descreve discriminação sistemática por grupo.\n- C) Problema de privacidade — relacionado ao acesso e proteção de dados pessoais; não descreve discriminação nas decisões.\n- D) Falta de explicabilidade — descreve dificuldade de entender decisões; o problema aqui é a decisão discriminatória em si.'
+        }, {
+            id: 49,
+            domain: 'Diretrizes para IA Responsável',
+            text: 'Uma instituição de saúde usa um modelo de IA para recomendar tratamentos médicos. Os médicos reclamam que não conseguem entender por que o modelo faz determinadas recomendações, o que dificulta a validação clínica. Qual princípio de IA responsável está sendo violado?',
+            options: [
+                { id: 'A', text: 'Privacidade e proteção de dados' },
+                { id: 'B', text: 'Explicabilidade e transparência (explainability)' },
+                { id: 'C', text: 'Robustez e segurança do modelo' },
+                { id: 'D', text: 'Equidade e não discriminação' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Quando usuários (especialmente especialistas como médicos) não conseguem entender por que um sistema de IA tomou uma decisão, o princípio de explicabilidade está sendo violado. Sistemas de alto impacto devem ser capazes de justificar suas recomendações de forma compreensível.\n\n❌ Por que as outras estão erradas:\n- A) Privacidade — relacionado a proteção de dados pessoais; não é o problema central aqui.\n- C) Robustez e segurança — refere-se à resistência a ataques e falhas técnicas; não à compreensibilidade das decisões.\n- D) Equidade — relacionado a tratamento justo entre grupos; o problema aqui é a falta de explicação, não discriminação.'
+        }, {
+            id: 50,
+            domain: 'Diretrizes para IA Responsável',
+            text: 'Uma empresa quer garantir que seu sistema de IA generativa não gere conteúdo prejudicial, como discurso de ódio ou instruções para atividades ilegais. Eles querem implementar essa proteção na camada da aplicação, não apenas no modelo. Qual serviço AWS é mais adequado para implementar esses filtros de conteúdo?',
+            options: [
+                { id: 'A', text: 'Amazon Rekognition Content Moderation' },
+                { id: 'B', text: 'Amazon Bedrock Guardrails com filtros de conteúdo configuráveis' },
+                { id: 'C', text: 'AWS Lambda com lógica de filtragem personalizada' },
+                { id: 'D', text: 'Amazon Comprehend com análise de sentimento' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: O Amazon Bedrock Guardrails permite configurar filtros de conteúdo (violência, discurso de ódio, conteúdo ilegal) diretamente na camada da aplicação, de forma declarativa e gerenciada, sem necessidade de lógica de filtragem personalizada.\n\n❌ Por que as outras estão erradas:\n- A) Rekognition Content Moderation — modera imagens e vídeos; não filtra texto gerado por LLMs.\n- C) Lambda com lógica personalizada — solução válida, mas muito mais trabalhosa que usar Guardrails nativo; contradiz o requisito de implementação na camada da aplicação de forma gerenciada.\n- D) Comprehend com análise de sentimento — analisa sentimentos em texto existente; não bloqueia geração de conteúdo em tempo real.'
+        }, {
+            id: 51,
+            domain: 'Diretrizes para IA Responsável',
+            text: 'Um desenvolvedor está criando um sistema de IA que processa dados pessoais de clientes para personalizar recomendações. A empresa opera na União Europeia e deve cumprir o GDPR. Qual prática é essencial para garantir conformidade com regulamentações de privacidade nesse contexto?',
+            options: [
+                { id: 'A', text: 'Armazenar todos os dados em texto claro para facilitar auditorias' },
+                { id: 'B', text: 'Obter consentimento explícito dos usuários e garantir o direito ao esquecimento (exclusão de dados)' },
+                { id: 'C', text: 'Usar apenas modelos de código aberto para evitar dependência de fornecedores' },
+                { id: 'D', text: 'Processar todos os dados localmente sem usar serviços de nuvem' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: O GDPR exige base legal para processamento de dados pessoais (como consentimento explícito) e garante aos titulares o direito de solicitar a exclusão de seus dados (direito ao esquecimento). São os dois requisitos fundamentais para conformidade com dados de clientes na UE.\n\n❌ Por que as outras estão erradas:\n- A) Dados em texto claro — o GDPR exige proteção dos dados; armazená-los sem criptografia aumenta o risco e viola boas práticas de segurança.\n- C) Apenas modelos open source — o GDPR não exige isso; o que importa é como os dados são tratados, não a origem do modelo.\n- D) Sem usar nuvem — o GDPR permite uso de nuvem com os controles adequados; proibir nuvem não é um requisito.'
+        }, {
+            id: 52,
+            domain: 'Diretrizes para IA Responsável',
+            text: 'Uma empresa quer implementar um processo de avaliação contínua de um modelo de ML em produção para detectar quando o desempenho do modelo se degrada ao longo do tempo devido a mudanças nos dados do mundo real. Como esse fenômeno é chamado?',
+            options: [
+                { id: 'A', text: 'Overfitting pós-deploy' },
+                { id: 'B', text: 'Data drift (ou model drift)' },
+                { id: 'C', text: 'Underfitting progressivo' },
+                { id: 'D', text: 'Viés de confirmação' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Data drift ocorre quando a distribuição dos dados do mundo real muda ao longo do tempo em relação aos dados de treinamento, causando degradação do desempenho do modelo em produção. É um fenômeno natural que exige monitoramento contínuo e retreinamento periódico.\n\n❌ Por que as outras estão erradas:\n- A) Overfitting pós-deploy — overfitting ocorre durante o treinamento; não descreve degradação progressiva em produção.\n- C) Underfitting progressivo — underfitting é insuficiência de aprendizado durante o treinamento; não descreve mudança de dados ao longo do tempo.\n- D) Viés de confirmação — tendência cognitiva humana; não descreve degradação técnica de modelos em produção.'
+        }, {
+            id: 53,
+            domain: 'Diretrizes para IA Responsável',
+            text: 'Uma empresa de crédito usa um modelo de IA para definir limites de crédito. Um cliente contesta a decisão e solicita uma explicação. A regulação local exige que decisões automatizadas sejam explicáveis. Qual abordagem atende melhor a esse requisito regulatório?',
+            options: [
+                { id: 'A', text: 'Fornecer apenas a decisão final sem explicação, pois o modelo é proprietário' },
+                { id: 'B', text: 'Usar técnicas de explicabilidade como SHAP ou LIME para identificar os fatores que influenciaram a decisão' },
+                { id: 'C', text: 'Substituir o modelo por um sistema de regras fixas sem ML' },
+                { id: 'D', text: 'Treinar um modelo mais complexo que tome decisões mais precisas' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: SHAP (SHapley Additive exPlanations) e LIME (Local Interpretable Model-agnostic Explanations) são técnicas que identificam quais variáveis mais influenciaram uma decisão específica. Permitem fornecer explicações individualizadas e auditáveis, atendendo requisitos regulatórios como o GDPR (Art. 22) e regulações de crédito.\n\n❌ Por que as outras estão erradas:\n- A) Fornecer apenas a decisão — viola o requisito regulatório explicitado no cenário.\n- C) Substituir por regras fixas — pode ser menos preciso e não escala; o requisito é explicabilidade, não abandono do ML.\n- D) Modelo mais complexo — modelos mais complexos (como deep learning) são geralmente menos explicáveis, não mais.'
+        }, {
+            id: 54,
+            domain: 'Diretrizes para IA Responsável',
+            text: 'Uma empresa está desenvolvendo um assistente de IA para atendimento ao cliente. A equipe quer garantir que o assistente seja honesto com os usuários sobre sua natureza artificial. Qual princípio de IA responsável essa prática representa?',
+            options: [
+                { id: 'A', text: 'Equidade e não discriminação' },
+                { id: 'B', text: 'Transparência — o sistema deve se identificar como IA quando questionado' },
+                { id: 'C', text: 'Privacidade e proteção de dados' },
+                { id: 'D', text: 'Robustez e confiabilidade' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Identificar-se como IA quando questionado é um princípio fundamental de transparência em IA responsável. Enganar usuários fazendo-os acreditar que estão interagindo com um humano viola a confiança e pode ter implicações éticas e legais.\n\n❌ Por que as outras estão erradas:\n- A) Equidade — refere-se a tratamento justo entre grupos; não descreve honestidade sobre a natureza do sistema.\n- C) Privacidade — relacionado à proteção de dados pessoais; não à identidade do sistema.\n- D) Robustez — refere-se à confiabilidade técnica e resistência a falhas; não à honestidade sobre ser IA.'
+        }, {
+            id: 55,
+            domain: 'Diretrizes para IA Responsável',
+            text: 'Um cientista de dados percebe que o modelo de ML da empresa tem alta acurácia geral (95%), mas desempenho muito inferior para clientes de baixa renda, que representam apenas 5% do dataset de treinamento. Qual princípio de IA responsável esse cenário viola principalmente?',
+            options: [
+                { id: 'A', text: 'Robustez técnica do modelo' },
+                { id: 'B', text: 'Equidade (fairness) — o modelo não performa igualmente para todos os grupos' },
+                { id: 'C', text: 'Privacidade dos dados de treinamento' },
+                { id: 'D', text: 'Eficiência computacional do modelo' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Alta acurácia geral mascarando baixo desempenho para grupos minoritários é um problema clássico de equidade. O modelo é injusto com clientes de baixa renda precisamente porque estão sub-representados no dataset — um padrão que perpetua desigualdades.\n\n❌ Por que as outras estão erradas:\n- A) Robustez técnica — refere-se à estabilidade do modelo frente a entradas adversariais ou distribuições incomuns; não à discriminação por grupo.\n- C) Privacidade — relacionado a acesso e proteção de dados; não ao desempenho desigual entre grupos.\n- D) Eficiência computacional — relacionado a custo e velocidade; não tem relação com o desempenho por subgrupo.'
+        }, {
+            id: 56,
+            domain: 'Diretrizes para IA Responsável',
+            text: 'Uma empresa quer adotar uma abordagem de "IA centrada no ser humano" em seus sistemas de decisão automatizada de alto impacto, como concessão de crédito e triagem de candidatos. Qual prática representa melhor esse princípio?',
+            options: [
+                { id: 'A', text: 'Substituir completamente os humanos por IA para eliminar viés humano' },
+                { id: 'B', text: 'Manter supervisão humana (human-in-the-loop) nas decisões de alto impacto' },
+                { id: 'C', text: 'Usar apenas modelos de código aberto auditáveis pela comunidade' },
+                { id: 'D', text: 'Publicar os pesos do modelo para garantir transparência total' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: IA centrada no ser humano significa que sistemas de alto impacto mantêm humanos no processo decisório. Human-in-the-loop garante que erros do modelo possam ser detectados e corrigidos antes de causarem danos, especialmente em decisões que afetam direitos e oportunidades das pessoas.\n\n❌ Por que as outras estão erradas:\n- A) Substituir completamente os humanos — o oposto de IA centrada no ser humano; aumenta o risco em decisões de alto impacto.\n- C) Apenas modelos open source — transparência técnica é importante, mas não equivale a manter humanos no processo decisório.\n- D) Publicar pesos do modelo — contribui para transparência técnica, mas não garante supervisão humana nas decisões individuais.'
+        }, {
+            id: 57,
+            domain: 'Segurança, Conformidade e Governança',
+            text: 'Uma empresa quer garantir que os dados enviados ao Amazon Bedrock para inferência não sejam usados pela AWS para treinar ou melhorar os modelos base. Qual afirmação descreve corretamente a política do Amazon Bedrock em relação a dados de clientes?',
+            options: [
+                { id: 'A', text: 'A AWS usa todos os dados de inferência para melhorar os modelos continuamente' },
+                { id: 'B', text: 'Por padrão, o Amazon Bedrock não usa dados de clientes para treinar modelos base' },
+                { id: 'C', text: 'O cliente deve assinar um contrato adicional para evitar o uso de seus dados' },
+                { id: 'D', text: 'Apenas dados de fine-tuning são protegidos; dados de inferência são compartilhados' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: A política do Amazon Bedrock é clara: dados enviados para inferência ou fine-tuning por clientes não são usados para treinar ou melhorar os modelos base da AWS. Isso é uma garantia fundamental de privacidade para dados empresariais sensíveis.\n\n❌ Por que as outras estão erradas:\n- A) AWS usa todos os dados de inferência — incorreto; a política é o oposto.\n- C) Contrato adicional necessário — não é necessário; a proteção é o comportamento padrão.\n- D) Apenas dados de fine-tuning protegidos — incorreto; tanto dados de inferência quanto de fine-tuning são protegidos por padrão.'
+        }, {
+            id: 58,
+            domain: 'Segurança, Conformidade e Governança',
+            text: 'Uma empresa de saúde quer usar Amazon Bedrock para processar dados de pacientes. Os dados são altamente sensíveis e sujeitos a regulamentações como HIPAA. Qual prática é essencial para garantir conformidade nesse cenário?',
+            options: [
+                { id: 'A', text: 'Processar os dados sem criptografia para reduzir latência' },
+                { id: 'B', text: 'Garantir que os dados sejam criptografados em trânsito e em repouso, e verificar se a região AWS é coberta pelo BAA (Business Associate Agreement)' },
+                { id: 'C', text: 'Usar apenas modelos de código aberto hospedados internamente' },
+                { id: 'D', text: 'Desabilitar o CloudTrail para evitar que logs contenham dados de pacientes' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Para dados de saúde sujeitos ao HIPAA, a AWS exige a assinatura de um BAA (Business Associate Agreement) com o cliente. Além disso, criptografia em trânsito (TLS) e em repouso (KMS) são controles técnicos obrigatórios para proteção de PHI (Protected Health Information).\n\n❌ Por que as outras estão erradas:\n- A) Sem criptografia para reduzir latência — viola o HIPAA e coloca dados de pacientes em risco; completamente inadequado.\n- C) Apenas modelos open source internos — o HIPAA não proíbe uso de nuvem; proíbe processamento inadequado de PHI.\n- D) Desabilitar CloudTrail — o oposto do correto; logs de auditoria são obrigatórios para conformidade com HIPAA.'
+        }, {
+            id: 59,
+            domain: 'Segurança, Conformidade e Governança',
+            text: 'Um engenheiro de segurança quer controlar quais equipes da empresa podem invocar quais modelos no Amazon Bedrock, seguindo o princípio do menor privilégio. Qual serviço AWS é usado para implementar esse controle de acesso?',
+            options: [
+                { id: 'A', text: 'Amazon Cognito com grupos de usuários' },
+                { id: 'B', text: 'AWS IAM com políticas de permissão granulares para o Bedrock' },
+                { id: 'C', text: 'Amazon VPC com security groups para isolar chamadas de API' },
+                { id: 'D', text: 'AWS Organizations com SCPs bloqueando o acesso ao Bedrock' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: O AWS IAM permite criar políticas que controlam exatamente quais usuários, grupos ou roles podem invocar quais modelos no Amazon Bedrock, seguindo o princípio do menor privilégio. É o mecanismo padrão de controle de acesso para todos os serviços AWS.\n\n❌ Por que as outras estão erradas:\n- A) Amazon Cognito — gerencia identidades de usuários finais de aplicações; não controla acesso a serviços AWS internos como o Bedrock.\n- C) VPC com security groups — controla tráfego de rede; não gerencia permissões de quem pode invocar quais modelos.\n- D) AWS Organizations com SCPs — SCPs definem limites para contas inteiras em uma organização; muito amplos para controle granular por equipe.'
+        }, {
+            id: 60,
+            domain: 'Segurança, Conformidade e Governança',
+            text: 'Uma empresa descobriu que um atacante tentou manipular seu chatbot de IA generativa inserindo instruções maliciosas escondidas no texto de entrada para fazer o modelo ignorar suas diretrizes de segurança. Como esse tipo de ataque é chamado?',
+            options: [
+                { id: 'A', text: 'SQL Injection' },
+                { id: 'B', text: 'Prompt injection' },
+                { id: 'C', text: 'Man-in-the-middle' },
+                { id: 'D', text: 'Data poisoning' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Prompt injection é um ataque em que entradas maliciosas são construídas para manipular o LLM a ignorar suas instruções originais e seguir comandos do atacante. É análogo ao SQL injection, mas direcionado a modelos de linguagem.\n\n❌ Por que as outras estão erradas:\n- A) SQL Injection — manipula bancos de dados via queries maliciosas; não descreve manipulação de LLMs via texto.\n- C) Man-in-the-middle — intercepta comunicação entre duas partes; não descreve manipulação via entrada de texto ao modelo.\n- D) Data poisoning — contamina os dados de treinamento para degradar o modelo; não descreve ataque em tempo de inferência via prompt.'
+        }, {
+            id: 61,
+            domain: 'Segurança, Conformidade e Governança',
+            text: 'Uma empresa quer auditar todas as chamadas feitas ao Amazon Bedrock por suas aplicações, incluindo qual modelo foi invocado, quando e por qual identidade. Qual serviço AWS fornece esse registro de auditoria?',
+            options: [
+                { id: 'A', text: 'Amazon CloudWatch Metrics' },
+                { id: 'B', text: 'AWS CloudTrail' },
+                { id: 'C', text: 'Amazon GuardDuty' },
+                { id: 'D', text: 'AWS Config' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: O AWS CloudTrail registra todas as chamadas de API feitas aos serviços AWS, incluindo o Amazon Bedrock — qual modelo foi invocado, quando, por qual identidade (usuário/role IAM) e de qual IP. É o serviço de auditoria padrão para conformidade e investigação de incidentes.\n\n❌ Por que as outras estão erradas:\n- A) CloudWatch Metrics — monitora métricas operacionais (latência, erros, uso); não registra chamadas de API com identidade e detalhes de auditoria.\n- C) Amazon GuardDuty — detecta ameaças e comportamentos maliciosos usando ML; não é um log de auditoria de chamadas de API.\n- D) AWS Config — rastreia mudanças em configurações de recursos AWS; não registra chamadas de inferência ao Bedrock.'
+        }, {
+            id: 62,
+            domain: 'Segurança, Conformidade e Governança',
+            text: 'Uma empresa quer garantir que os dados enviados ao Amazon Bedrock trafeguem exclusivamente pela rede privada da AWS, sem passar pela internet pública. Qual recurso AWS deve ser configurado para atender a esse requisito?',
+            options: [
+                { id: 'A', text: 'AWS Direct Connect com link dedicado ao Bedrock' },
+                { id: 'B', text: 'VPC Endpoint (AWS PrivateLink) para o Amazon Bedrock' },
+                { id: 'C', text: 'Amazon CloudFront com origem no Bedrock' },
+                { id: 'D', text: 'AWS Shield Advanced com proteção de tráfego' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Um VPC Endpoint usando AWS PrivateLink cria uma conexão privada entre a VPC da empresa e o Amazon Bedrock, garantindo que o tráfego nunca saia para a internet pública. É a solução padrão para requisitos de privacidade de rede com serviços AWS.\n\n❌ Por que as outras estão erradas:\n- A) AWS Direct Connect — estabelece conexão dedicada entre o data center on-premises e a AWS; não é necessário para comunicação entre serviços dentro da AWS.\n- C) Amazon CloudFront — CDN para distribuição de conteúdo; não garante tráfego privado entre aplicações e serviços AWS.\n- D) AWS Shield Advanced — proteção contra DDoS; não controla o roteamento de tráfego.'
+        }, {
+            id: 63,
+            domain: 'Segurança, Conformidade e Governança',
+            text: 'Uma empresa está implementando um modelo de IA generativa para uso interno. A equipe de segurança quer garantir que o modelo não vaze dados confidenciais da empresa nas respostas geradas, mesmo que o usuário tente extraí-los via prompt. Qual combinação de controles reduz mais efetivamente esse risco?',
+            options: [
+                { id: 'A', text: 'Aumentar o número de parâmetros do modelo e usar temperatura zero' },
+                { id: 'B', text: 'Implementar Amazon Bedrock Guardrails com filtros de informações sensíveis e revisar os prompts de sistema' },
+                { id: 'C', text: 'Usar apenas modelos fine-tunados internamente sem acesso à internet' },
+                { id: 'D', text: 'Criptografar as respostas do modelo antes de exibi-las ao usuário' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Bedrock Guardrails com filtros de informações sensíveis detecta e bloqueia respostas que possam conter dados confidenciais. Combinado com prompts de sistema bem construídos que instruem o modelo a não revelar informações internas, forma uma defesa em camadas eficaz contra vazamento de dados.\n\n❌ Por que as outras estão erradas:\n- A) Modelo maior + temperatura zero — temperatura zero reduz variabilidade mas não impede vazamento de informações que estão no contexto; tamanho do modelo não adiciona proteção de dados.\n- C) Modelos fine-tunados sem internet — limitar acesso à internet do modelo não impede que ele vaze dados que estão no prompt ou na base de conhecimento.\n- D) Criptografar respostas antes de exibir — criptografar a saída não impede o vazamento do conteúdo; o usuário que decifrar ainda receberia os dados.'
+        }, {
+            id: 64,
+            domain: 'Segurança, Conformidade e Governança',
+            text: 'Uma empresa multinacional quer garantir que seus sistemas de IA estejam em conformidade com diferentes regulamentações de IA ao redor do mundo, como o AI Act da União Europeia e regulamentações locais de outros países. Qual abordagem de governança é mais adequada para gerenciar essa complexidade regulatória?',
+            options: [
+                { id: 'A', text: 'Implementar o conjunto mais restritivo de regras globalmente para simplificar a gestão' },
+                { id: 'B', text: 'Estabelecer um framework de governança de IA com políticas, revisões regulatórias periódicas e responsáveis designados por região' },
+                { id: 'C', text: 'Usar apenas serviços AWS certificados para evitar preocupações de conformidade' },
+                { id: 'D', text: 'Terceirizar toda a responsabilidade de conformidade para o provedor de nuvem' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Regulamentações de IA variam significativamente entre jurisdições (UE, EUA, Brasil, etc.). Um framework de governança estruturado com políticas documentadas, revisões periódicas e responsáveis designados por região é a abordagem madura e escalável para gerenciar essa complexidade.\n\n❌ Por que as outras estão erradas:\n- A) Regras mais restritivas globalmente — simplifica a gestão mas pode inviabilizar casos de uso legítimos em regiões com regulamentações menos restritivas, gerando desvantagem competitiva desnecessária.\n- C) Apenas serviços AWS certificados — certificações de serviços de nuvem (ISO, SOC 2) cobrem infraestrutura, não conformidade com regulamentações específicas de IA como o AI Act da UE.\n- D) Terceirizar ao provedor de nuvem — a responsabilidade de conformidade com regulamentações de IA é do cliente, não do provedor. A AWS oferece ferramentas, mas a responsabilidade final é da empresa.'
+        }, {
+            id: 65,
+            domain: 'Segurança, Conformidade e Governança',
+            text: 'Uma empresa quer implementar um processo formal para avaliar riscos antes de colocar novos sistemas de IA em produção, garantindo que impactos negativos sejam identificados e mitigados antecipadamente. Como esse processo é chamado no contexto de governança de IA?',
+            options: [
+                { id: 'A', text: 'Teste de carga (load testing)' },
+                { id: 'B', text: 'Avaliação de impacto de IA (AI Impact Assessment)' },
+                { id: 'C', text: 'Revisão de arquitetura técnica (Technical Architecture Review)' },
+                { id: 'D', text: 'Análise de custo-benefício de ML' }
+            ],
+            correct: 'B',
+            explanation: '✅ Por que B é correta: Uma AI Impact Assessment é um processo formal de governança que avalia riscos potenciais de um sistema de IA antes do deploy — incluindo impactos éticos, sociais, técnicos e regulatórios. É exigida explicitamente pelo AI Act da UE para sistemas de alto risco e representa a melhor prática de governança responsável.\n\n❌ Por que as outras estão erradas:\n- A) Teste de carga — avalia desempenho técnico sob alta demanda; não identifica riscos éticos ou de impacto social.\n- C) Revisão de arquitetura técnica — foca em qualidade e adequação da arquitetura técnica; não avalia impactos negativos mais amplos do sistema de IA.\n- D) Análise de custo-benefício — avalia viabilidade econômica; não é um processo formal de identificação e mitigação de riscos de IA.'
+        }];
+
+        // ============================================================
+        // QUIZ ENGINE — com setup, aleatoriedade e distribuição equilibrada
+        // ============================================================
+
+        const state = {
+            currentIndex: 0,
+            answers: [],
+            revealed: [],
+            quizFinished: false,
+            questions: [],
+            totalQuestions: 0,
+        };
+
+        const $ = (sel) => document.querySelector(sel);
+        const $$ = (sel) => document.querySelectorAll(sel);
+
+        const setupScreen = $('#setupScreen');
+        const quizArea = $('#quizArea');
+        const questionArea = $('#questionArea');
+        const prevBtn = $('#prevBtn');
+        const nextBtn = $('#nextBtn');
+        const navCounter = $('#navCounter');
+        const progressFill = $('#progressFill');
+        const progressText = $('#progressText');
+        const scoreDisplay = $('#scoreDisplay');
+        const reviewSection = $('#reviewSection');
+        const reviewList = $('#reviewList');
+        const noWrongMsg = $('#noWrongMsg');
+        const restartBtn = $('#restartBtn');
+        const startBtn = $('#startQuizBtn');
+        const setupMsg = $('#setupMsg');
+        const setupOptions = $$('.setup-option');
+
+        let selectedCount = 0;
+
+        // --- Tela de setup ---
+        setupOptions.forEach(el => {
+            el.addEventListener('click', function() {
+                setupOptions.forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedCount = parseInt(this.dataset.count, 10);
+                startBtn.disabled = false;
+                setupMsg.textContent = `✅ ${selectedCount} questões selecionadas. Clique em "Iniciar Quiz".`;
+            });
+        });
+
+        startBtn.addEventListener('click', function() {
+            if (selectedCount < 1) return;
+            startQuiz(selectedCount);
+        });
+
+        // --- Função principal para iniciar o quiz ---
+        function startQuiz(count) {
+            // 1. Embaralhar todas as questões
+            const shuffled = shuffleArray([...rawQuestions]);
+
+            // 2. Selecionar as primeiras 'count' ou todas se count > total
+            const total = shuffled.length;
+            const qty = Math.min(count, total);
+            const selectedQuestions = shuffled.slice(0, qty);
+
+            // 3. Para cada questão, redistribuir as alternativas de forma equilibrada
+            const letters = ['A', 'B', 'C', 'D'];
+            const processed = selectedQuestions.map((q, idx) => {
+                const targetLetter = letters[idx % 4];
+                const correctOption = q.options.find(o => o.id === q.correct);
+                const wrongOptions = q.options.filter(o => o.id !== q.correct);
+                const shuffledWrong = shuffleArray([...wrongOptions]);
+
+                const newOptions = [];
+                const targetIndex = letters.indexOf(targetLetter);
+                for (let i = 0; i < 4; i++) {
+                    if (i === targetIndex) {
+                        newOptions.push({ id: letters[i], text: correctOption.text });
+                    } else {
+                        const wrong = shuffledWrong.pop();
+                        newOptions.push({ id: letters[i], text: wrong.text });
+                    }
+                }
+                const newCorrect = targetLetter;
+
+                // Atualizar explicação substituindo referências de letras
+                const textToNewLetter = {};
+                newOptions.forEach(opt => {
+                    textToNewLetter[opt.text] = opt.id;
+                });
+                let newExplanation = q.explanation;
+                letters.forEach(oldLetter => {
+                    const oldOpt = q.options.find(o => o.id === oldLetter);
+                    if (oldOpt) {
+                        const newLetter = textToNewLetter[oldOpt.text];
+                        if (newLetter) {
+                            const regex = new RegExp(`\\b${oldLetter}\\)`, 'g');
+                            newExplanation = newExplanation.replace(regex, `${newLetter})`);
+                            const regex2 = new RegExp(`\\b${oldLetter} é correta`, 'g');
+                            newExplanation = newExplanation.replace(regex2, `${newLetter} é correta`);
+                            const regex3 = new RegExp(`Por que ${oldLetter}`, 'g');
+                            newExplanation = newExplanation.replace(regex3, `Por que ${newLetter}`);
+                            const regex4 = new RegExp(`- ${oldLetter}\\)`, 'g');
+                            newExplanation = newExplanation.replace(regex4, `- ${newLetter})`);
+                            const regex5 = new RegExp(`\\b${oldLetter}\\)\\s`, 'g');
+                            newExplanation = newExplanation.replace(regex5, `${newLetter}) `);
+                        }
+                    }
+                });
+                const correctOld = q.correct;
+                const correctNew = textToNewLetter[q.options.find(o => o.id === correctOld)?.text];
+                if (correctNew) {
+                    newExplanation = newExplanation.replace(
+                        new RegExp(`✅ Por que ${correctOld} é correta`, 'g'),
+                        `✅ Por que ${correctNew} é correta`
+                    );
+                }
+
+                return {
+                    ...q,
+                    options: newOptions,
+                    correct: newCorrect,
+                    explanation: newExplanation,
+                };
+            });
+
+            // 4. Atualizar estado
+            state.questions = processed;
+            state.totalQuestions = processed.length;
+            state.answers = new Array(state.totalQuestions).fill(null);
+            state.revealed = new Array(state.totalQuestions).fill(false);
+            state.currentIndex = 0;
+            state.quizFinished = false;
+
+            setupScreen.classList.add('hidden');
+            quizArea.classList.remove('hidden');
+            reviewSection.classList.add('hidden');
+
+            renderQuestion();
+        }
+
+        // --- Embaralhador ---
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // --- Renderização da questão atual ---
+        function renderQuestion() {
+            const idx = state.currentIndex;
+            const q = state.questions[idx];
+            if (!q) return;
+            const total = state.totalQuestions;
+            const answered = state.answers[idx] !== null;
+            const selected = state.answers[idx];
+            const revealed = state.revealed[idx];
+
+            const answeredCount = state.answers.filter(a => a !== null).length;
+            const pct = total > 0 ? Math.round((answeredCount / total) * 100) : 0;
+            progressFill.style.width = `${(answeredCount / total) * 100}%`;
+            progressText.textContent = `${answeredCount} / ${total}`;
+            scoreDisplay.textContent = `${pct}%`;
+            navCounter.textContent = `${idx + 1} de ${total}`;
+
+            let html = `
+                <div class="fade-enter">
+                    <div class="flex items-center gap-3 mb-4 flex-wrap">
+                        <span class="question-number-badge">Questão ${q.id}</span>
+                        <span class="badge-domain">${q.domain}</span>
+                        ${answered ? '<span class="pill-tag" style="background:#e6f7ed;color:#0f973d;">✓ Respondida</span>' : '<span class="pill-tag" style="background:#f0f2f6;color:#6b7b9a;">Pendente</span>'}
+                    </div>
+                    <div class="text-[#1a2332] text-lg font-medium leading-relaxed mb-5">
+                        ${q.text}
+                    </div>
+                    <div class="space-y-3">
+            `;
+
+            q.options.forEach((opt) => {
+                let classes = 'option-btn';
+                const isCorrect = opt.id === q.correct;
+                const isSelected = selected === opt.id;
+
+                if (revealed) {
+                    classes += ' disabled';
+                    if (isCorrect) classes += ' reveal-correct';
+                    if (isSelected && !isCorrect) classes += ' selected-wrong';
+                    if (isSelected && isCorrect) classes += ' selected-correct';
+                } else {
+                    if (isSelected) classes += ' disabled';
+                }
+                if (answered && !revealed) classes += ' disabled';
+
+                html += `
+                    <div class="${classes}" data-opt="${opt.id}" data-qidx="${idx}" style="display:flex;align-items:center;gap:12px;">
+                        <span class="letter">${opt.id}</span>
+                        <span>${opt.text}</span>
+                        ${revealed && isCorrect ? ' <span style="margin-left:auto;color:#0f973d;font-weight:700;">✓</span>' : ''}
+                        ${revealed && isSelected && !isCorrect ? ' <span style="margin-left:auto;color:#d32f2f;font-weight:700;">✗</span>' : ''}
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+
+            if (revealed) {
+                const expl = q.explanation.replace(/\n/g, '<br>');
+                const isCorrect = selected === q.correct;
+                html += `
+                    <div class="explanation-box">
+                        <div class="${isCorrect ? 'correct-label' : 'wrong-label'} mb-2">
+                            ${isCorrect ? '✅ Resposta correta!' : '❌ Resposta incorreta.'}
+                            <span style="font-weight:400;color:#4a5a7a;font-size:0.85rem;">
+                                A resposta certa é <strong>${q.correct}</strong>
+                            </span>
+                        </div>
+                        <div style="font-size:0.92rem;line-height:1.6;color:#1f2a3a;">
+                            ${expl}
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            questionArea.innerHTML = html;
+
+            if (!revealed && !answered) {
+                $$('.option-btn:not(.disabled)').forEach((el) => {
+                    el.addEventListener('click', function() {
+                        const opt = this.dataset.opt;
+                        const qIdx = parseInt(this.dataset.qidx);
+                        handleAnswer(qIdx, opt);
+                    });
+                });
+            }
+
+            prevBtn.disabled = idx === 0;
+            if (idx === total - 1) {
+                nextBtn.textContent = '📊 Ver Resultado';
+            } else {
+                nextBtn.textContent = 'Próxima →';
+            }
+
+            if (state.quizFinished) {
+                reviewSection.classList.remove('hidden');
+                buildReview();
+            } else {
+                reviewSection.classList.add('hidden');
+            }
+        }
+
+        function handleAnswer(qIdx, option) {
+            if (state.revealed[qIdx]) return;
+            if (state.answers[qIdx] !== null) return;
+
+            state.answers[qIdx] = option;
+            state.revealed[qIdx] = true;
+
+            const allAnswered = state.answers.every(a => a !== null);
+            if (allAnswered) {
+                state.quizFinished = true;
+            }
+
+            renderQuestion();
+
+            if (state.quizFinished) {
+                reviewSection.classList.remove('hidden');
+                buildReview();
+                nextBtn.disabled = true;
+                nextBtn.textContent = '✅ Concluído';
+            }
+        }
+
+        function goToPrev() {
+            if (state.currentIndex > 0) {
+                state.currentIndex--;
+                renderQuestion();
+            }
+        }
+
+        function goToNext() {
+            const total = state.totalQuestions;
+            if (state.currentIndex === total - 1) {
+                finishQuiz();
+                return;
+            }
+            if (state.currentIndex < total - 1) {
+                state.currentIndex++;
+                renderQuestion();
+            }
+        }
+
+        function finishQuiz() {
+            state.quizFinished = true;
+            renderQuestion();
+            reviewSection.classList.remove('hidden');
+            buildReview();
+            nextBtn.disabled = true;
+            nextBtn.textContent = '✅ Concluído';
+            const correct = state.answers.filter((a, i) => a === state.questions[i].correct).length;
+            const pct = Math.round((correct / state.totalQuestions) * 100);
+            scoreDisplay.textContent = `${pct}%`;
+            setTimeout(() => {
+                reviewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 300);
+        }
+
+        function buildReview() {
+            const wrong = [];
+            state.questions.forEach((q, i) => {
+                if (state.answers[i] !== null && state.answers[i] !== q.correct) {
+                    wrong.push({ index: i, question: q, userAnswer: state.answers[i] });
+                }
+            });
+
+            if (wrong.length === 0) {
+                reviewList.innerHTML = '';
+                noWrongMsg.classList.remove('hidden');
+                return;
+            }
+            noWrongMsg.classList.add('hidden');
+            let html = '';
+            wrong.forEach((w) => {
+                const userText = w.question.options.find(o => o.id === w.userAnswer)?.text || w.userAnswer;
+                const correctText = w.question.options.find(o => o.id === w.question.correct)?.text || w.question.correct;
+                html += `
+                    <div class="review-item">
+                        <div class="q-head">Questão ${w.question.id} — ${w.question.domain}</div>
+                        <div class="text-sm text-muted mt-1">${w.question.text.substring(0, 120)}${w.question.text.length > 120 ? '…' : ''}</div>
+                        <div class="flex flex-wrap gap-4 mt-2 text-sm">
+                            <span class="your-answer">✗ Sua resposta: ${w.userAnswer} — ${userText}</span>
+                            <span class="correct-answer">✓ Correta: ${w.question.correct} — ${correctText}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            reviewList.innerHTML = html;
+        }
+
+        function restartQuiz() {
+            setupScreen.classList.remove('hidden');
+            quizArea.classList.add('hidden');
+            reviewSection.classList.add('hidden');
+            state.questions = [];
+            state.answers = [];
+            state.revealed = [];
+            state.totalQuestions = 0;
+            state.currentIndex = 0;
+            state.quizFinished = false;
+            progressFill.style.width = '0%';
+            progressText.textContent = '0 / 0';
+            scoreDisplay.textContent = '0%';
+            navCounter.textContent = '0 de 0';
+            setupOptions.forEach(o => o.classList.remove('selected'));
+            startBtn.disabled = true;
+            setupMsg.textContent = 'Selecione uma quantidade para começar';
+            selectedCount = 0;
+            nextBtn.disabled = false;
+            nextBtn.textContent = 'Próxima →';
+            reviewSection.classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        prevBtn.addEventListener('click', goToPrev);
+        nextBtn.addEventListener('click', goToNext);
+        restartBtn.addEventListener('click', restartQuiz);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') goToPrev();
+            if (e.key === 'ArrowRight') goToNext();
+        });
+
+        console.log(`✅ Quiz carregado com ${rawQuestions.length} questões.`);
+        console.log('📚 Domínios:', [...new Set(rawQuestions.map(q => q.domain))]);
+    </script>
+
+</body>
+</html>
